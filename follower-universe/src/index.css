@@ -1,0 +1,17 @@
+* {
+  box-sizing: border-box;
+}
+
+body, html {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  background-color: #000000; /* Uzay boşluğu simsiyah */
+  overflow: hidden; /* Kenardaki çubukları yok eder */
+}
+
+#root {
+  width: 100%;
+  height: 100%;
+}
