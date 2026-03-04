@@ -677,6 +677,7 @@ try {
   useGLTF.preload('/standartvatandas.glb');
   useGLTF.preload('/space_station');
   useGLTF.preload('/memory_core.glb');
+  useGLTF.preload('/animation_object.glb');
 } catch (e) { }
 // ==========================================
 // 3. BÖLÜM: KAMERA VE ANA UYGULAMA
@@ -736,11 +737,14 @@ function SpaceStationModel({ position, scale, setFocusedTarget }) {
   const { scene } = useGLTF('/space_station.glb')
 
   return (
-    
     <group position={position}>
-      {/* İSTASYONA VURAN ÖZEL IŞIK */}
-      <pointLight intensity={150} distance={50} color="#ffffff" position={[5, 10, 5]} />
-      <spotLight position={[0, 20, 10]} intensity={300} angle={0.3} penumbra={1} color="#4488ff" /> 
+      {/* GÜNEŞ YANSIMASI: Işığı Güneş'in olduğu yöne (merkeze doğru) konumlandırıyoruz */}
+      <pointLight 
+        intensity={10000} // Parlaklık şiddeti
+        distance={200}   // Işığın ulaşacağı mesafe
+        color="#ffcc00"  // Güneş'in altın sarısı rengi
+        position={[-90, -20, -35]} // İstasyon [90, 20, 35] olduğu için tam tersi yön Güneş'i gösterir
+      />
 
       <primitive 
         object={scene} 
@@ -752,7 +756,53 @@ function SpaceStationModel({ position, scale, setFocusedTarget }) {
     </group>
   )
 }
+function AnimatedStructure({ position, scale, setFocusedTarget, focusedTarget, onEnterBlackHole }) {
+  const group = useRef()
+  const { scene, animations } = useGLTF('/animation_object.glb') 
+  const { actions, names } = useAnimations(animations, group)
+
+  useEffect(() => {
+    if (names.length > 0) actions[names[0]]?.reset().play()
+  }, [actions, names])
+
+  return (
+    <group 
+      ref={group} 
+      position={position} 
+      scale={scale}
+      onClick={(e) => { 
+        e.stopPropagation(); 
+        // Eğer zaten bu yapıya odaklıysak girişi başlat, değilsek odaklan
+        if (focusedTarget === 'animated_structure') {
+          onEnterBlackHole(); 
+        } else {
+          setFocusedTarget('animated_structure');
+        }
+      }}
+      onPointerOver={() => (document.body.style.cursor = 'pointer')}
+      onPointerOut={() => (document.body.style.cursor = 'auto')}
+    >
+      <primitive object={scene} />
+
+      {/* Sadece odaklandığımızda görünen ve girişi belirten yazı */}
+      {focusedTarget === 'animated_structure' && (
+        <Billboard position={[0, 45, 0]}>
+          <Text 
+            fontSize={8} 
+            color="#ff0000" 
+            font="/Orbitron-Bold.ttf"
+            outlineWidth={0.5}
+            outlineColor="#000000"
+          >
+            /// [ CLICK AGAIN TO ENTER EVENT HORIZON ] ///
+          </Text>
+        </Billboard>
+      )}
+    </group>
+  )
+}
 function App() {
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [view, setView] = useState('galaxy') 
   const [focusedTarget, setFocusedTarget] = useState('sun')
   const [transitionVideo, setTransitionVideo] = useState('/transition.mp4')
@@ -764,25 +814,26 @@ function App() {
   const stepRef = useRef(null);
   const birdsRef = useRef(null); 
 
-  // KAMERA ODAKLANMA SİSTEMİ (Yeni Hedef: memory_core eklendi)
+  // KAMERA ODAKLANMA SİSTEMİ
   useEffect(() => {
-   if (!cameraControlsRef.current) return;
+    if (!cameraControlsRef.current) return;
 
-   if (focusedTarget === 'sun') {
-     // Güneş artık dev (yarıçap 25), o yüzden kamerayı 80 birim uzağa koyuyoruz
-      cameraControlsRef.current.setLookAt(0, 40, 80, 0, 0, 0, true);
-   } 
-   else if (focusedTarget === 'memory_core') {
-     // Yeni konumun [80, 20, 20]. Yakın çekim için:
-     cameraControlsRef.current.setLookAt(100, 40, 50, 80, 20, 20, true);
-   }
-   else if (focusedTarget === 'space_station') {
-     // İstasyon konumu [65, 20, 20]. Yakın çekim için:
-      cameraControlsRef.current.setLookAt(85, 40, 60, 75, 10, 20, true);
-   }
-}, [focusedTarget]);
+    if (focusedTarget === 'sun') {
+       cameraControlsRef.current.setLookAt(0, 40, 80, 0, 0, 0, true);
+    } 
+    else if (focusedTarget === 'memory_core') {
+       cameraControlsRef.current.setLookAt(100, 40, 50, 80, 20, 20, true);
+    }
+    else if (focusedTarget === 'space_station') {
+       cameraControlsRef.current.setLookAt(85, 40, 60, 75, 10, 20, true);
+    }
+    else if (focusedTarget === 'animated_structure') {
+       // Uzaklaştırdığımız konuma [-250, 10, -200] göre odaklanma
+       cameraControlsRef.current.setLookAt(-180, 50, -130, -250, 10, -200, true);
+    }
+  }, [focusedTarget]);
 
-  // SES SİSTEMİ
+  // SES SİSTEMİ (Değişmedi)
   useEffect(() => {
     if (view === 'surface_genesis') {
       if (fireRef.current) fireRef.current.pause();
@@ -811,7 +862,6 @@ function App() {
     let vidSrc = '/transition.mp4'; 
     if (planetType === 'lava') vidSrc = '/lavatransition.mp4';
     if (planetType === 'genesis') vidSrc = '/paradisetransition1.mp4';
-    
     setTransitionVideo(vidSrc);
     setTimeout(() => { if (videoRef.current) { videoRef.current.style.opacity = '1'; videoRef.current.currentTime = 0; videoRef.current.play(); } }, 50);
     setTimeout(() => { setView(`surface_${planetType}`) }, 2500) 
@@ -820,7 +870,7 @@ function App() {
 
   const menuItemStyle = (target, color) => ({
     padding: '10px 15px', margin: '5px 0', cursor: 'pointer',
-    background: focusedTarget === target ? `${color}44` : 'rgba(0, 0, 0, 0.5)',
+    background: focusedTarget === target ? `${color}44` : 'rgba(0, 5, 10, 0.8)',
     borderLeft: focusedTarget === target ? `4px solid ${color}` : '4px solid transparent',
     color: focusedTarget === target ? color : '#aaaaaa', transition: 'all 0.3s', fontFamily: '"Courier New", Courier, monospace', fontSize: '14px'
   });
@@ -828,84 +878,81 @@ function App() {
   return (
     <div style={{ width: '100vw', height: '100vh', position: 'relative' }}>
       {view === 'galaxy' && (
-        <div style={{ position: 'absolute', top: '20px', left: '20px', zIndex: 10, background: 'rgba(0, 5, 10, 0.8)', border: '1px solid #555', padding: '20px', borderRadius: '8px', backdropFilter: 'blur(5px)', width: '250px' }}>
-          <h2 style={{ color: '#ffffff', margin: '0 0 20px 0', fontSize: '18px', borderBottom: '1px solid #555', paddingBottom: '10px' }}>/// SYSTEM NAVIGATOR</h2>
-          <div style={menuItemStyle('sun', '#ffaa00')} onClick={() => setFocusedTarget('sun')}>[0] Central Sun</div>
-          <div style={menuItemStyle('genesis', '#ffd700')} onClick={() => setFocusedTarget('genesis')}>[1] Elysium Prime</div>
-          <div style={menuItemStyle('lava', '#ff3300')} onClick={() => setFocusedTarget('lava')}>[2] Ignis Prime</div>
-          <div style={menuItemStyle('ice', '#00ffff')} onClick={() => setFocusedTarget('ice')}>[3] Frozen</div>
-          
-          {/* YENİ MENÜ ÖĞESİ */}
-          <div style={menuItemStyle('memory_core', '#13630c')} onClick={() => setFocusedTarget('memory_core')}>[4] Memory Core</div>
-          {/* Mevcut menü öğelerinin altına ekle */}
-          <div style={menuItemStyle('space_station', '#888888')} onClick={() => setFocusedTarget('space_station')}>
-          [5] Space Station
+        <>
+          {/* 🍔 HAMBURGER BUTONU */}
+          <div 
+            onClick={() => setIsMenuOpen(!isMenuOpen)}
+            style={{
+              position: 'absolute', top: '25px', left: '25px', zIndex: 100,
+              cursor: 'pointer', background: 'rgba(0, 5, 10, 0.9)', padding: '12px',
+              borderRadius: '5px', border: '1px solid #555', display: 'flex', flexDirection: 'column', gap: '5px'
+            }}
+          >
+            <div style={{ width: '25px', height: '3px', background: '#fff' }}></div>
+            <div style={{ width: '25px', height: '3px', background: '#fff' }}></div>
+            <div style={{ width: '25px', height: '3px', background: '#fff' }}></div>
           </div>
-        </div>
+
+          {/* 📱 AÇILIR NAVİGASYON PANELİ */}
+          <div style={{ 
+            position: 'absolute', top: '20px', 
+            left: isMenuOpen ? '20px' : '-300px', // Animasyonlu kayma efekti
+            zIndex: 10, background: 'rgba(0, 5, 10, 0.9)', border: '1px solid #555', 
+            padding: '20px', borderRadius: '8px', backdropFilter: 'blur(10px)', 
+            width: '250px', transition: 'all 0.5s ease-in-out', 
+            opacity: isMenuOpen ? 1 : 0 
+          }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', borderBottom: '1px solid #555', paddingBottom: '10px' }}>
+              <h2 style={{ color: '#ffffff', margin: 0, fontSize: '16px' }}>/// NAVIGATOR</h2>
+              <span onClick={() => setIsMenuOpen(false)} style={{ color: '#fff', cursor: 'pointer', fontSize: '22px' }}>×</span>
+            </div>
+
+            <div style={menuItemStyle('sun', '#ffaa00')} onClick={() => { setFocusedTarget('sun'); setIsMenuOpen(false); }}>[0] Central Sun</div>
+            <div style={menuItemStyle('genesis', '#ffd700')} onClick={() => { setFocusedTarget('genesis'); setIsMenuOpen(false); }}>[1] Elysium Prime</div>
+            <div style={menuItemStyle('lava', '#ff3300')} onClick={() => { setFocusedTarget('lava'); setIsMenuOpen(false); }}>[2] Ignis Prime</div>
+            <div style={menuItemStyle('ice', '#00ffff')} onClick={() => { setFocusedTarget('ice'); setIsMenuOpen(false); }}>[3] Frozen</div>
+            <div style={menuItemStyle('memory_core', '#13630c')} onClick={() => { setFocusedTarget('memory_core'); setIsMenuOpen(false); }}>[4] Memory Core</div>
+            <div style={menuItemStyle('space_station', '#888888')} onClick={() => { setFocusedTarget('space_station'); setIsMenuOpen(false); }}>[5] Space Station</div>
+            <div style={menuItemStyle('animated_structure', '#ff00ff')} onClick={() => { setFocusedTarget('animated_structure'); setIsMenuOpen(false); }}>[6] Unknown Signal</div>
+          </div>
+        </>
       )}
       
-      <audio ref={windRef} src="/wind.mp3" loop /> 
-      <audio ref={fireRef} src="/fire.mp3" loop /> 
-      <audio ref={birdsRef} src="/birds.mp3" loop /> 
-      <audio ref={stepRef} src="/grass_step.mp3" loop />
-      
+      <audio ref={windRef} src="/wind.mp3" loop /> <audio ref={fireRef} src="/fire.mp3" loop /> 
+      <audio ref={birdsRef} src="/birds.mp3" loop /> <audio ref={stepRef} src="/grass_step.mp3" loop />
       <video ref={videoRef} src={transitionVideo} style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', objectFit: 'cover', zIndex: 100, opacity: 0, pointerEvents: 'none', transition: 'opacity 0.5s ease-out' }} />
-      {view.startsWith('surface') && (
-        <button onClick={() => { setView('galaxy'); setFocusedTarget('sun'); }} style={{ position: 'absolute', top: '20px', left: '20px', zIndex: 10, padding: '10px 20px', fontSize: '16px', cursor: 'pointer', backgroundColor: 'rgba(255, 255, 255, 0.1)', color: '#ffffff', border: '1px solid #ffffff', borderRadius: '5px', backdropFilter: 'blur(5px)' }}>&lt; Return to Orbit</button>
-      )}
+
       <Canvas>
         <CameraControls ref={cameraControlsRef} maxPolarAngle={Math.PI / 2 - 0.05} minDistance={2} maxDistance={300} />
         <SceneController view={view} controlsRef={cameraControlsRef} />
         <PlayerController controlsRef={cameraControlsRef} view={view} stepRef={stepRef} />
+        
         {view === 'galaxy' && (
           <>
-            <ambientLight intensity={0.2} color="#ffffff" /> 
+            <ambientLight intensity={1.4} color="#ffffff" /> 
             <SunSystem focusedTarget={focusedTarget} setFocusedTarget={setFocusedTarget} controlsRef={cameraControlsRef} />
             <SolarSystemOrbits onEnter={handleEnterPlanet} focusedTarget={focusedTarget} setFocusedTarget={setFocusedTarget} controlsRef={cameraControlsRef} />
-            
-            {/* PARAMETRELER GÜNCELLENDİ */}
-            <MemoryCoreHologram 
-              list={genesisFollowers} 
+            <MemoryCoreHologram list={genesisFollowers} setFocusedTarget={setFocusedTarget} cameraControlsRef={cameraControlsRef} />
+            <SpaceStationModel position={[90, 20, 35]} scale={0.2} setFocusedTarget={setFocusedTarget} />
+
+            <AnimatedStructure 
+              position={[-250, 10, -200]} 
+              scale={0.07} 
               setFocusedTarget={setFocusedTarget} 
-              cameraControlsRef={cameraControlsRef} 
-            />
-            {/* YENİ: ANA UZAY İSTASYONU */}
-            <SpaceStationModel 
-             position={[90, 20, 35]} // Memory Core'un 15 birim soluna koyduk
-             scale={0.2} 
-             setFocusedTarget={setFocusedTarget}
             />
             
-            <Stars radius={150} depth={50} count={5000} factor={4} fade speed={1} />
+            <Stars radius={250} depth={100} count={7000} factor={6} fade speed={1} />
           </>
         )}
-        
+
         {view === 'surface_genesis' && (
           <>
             <ambientLight intensity={0.8} color="#ffffff" /> 
             <directionalLight position={[-50, 80, -20]} intensity={1.5} color="#ffffee" />
-            <ParadiseTerrain /> 
-            <ParadiseWater />
-            <Fireflies />
+            <ParadiseTerrain /> <ParadiseWater /> <Fireflies />
             <Cloud position={[0, 100, 0]} opacity={0.5} speed={0.4} width={200} depth={200} segments={40} color="#ffffff" />
             <GenesisHierarchy controlsRef={cameraControlsRef} list={genesisFollowers} /> 
-            <GlowingTrees />
-            <FloatingIsland />
-          </>
-        )}
-
-        {view === 'surface_ice' && (
-          <>
-            <ambientLight intensity={0.6} color="#88ccff" /> <directionalLight position={[-50, 50, -20]} intensity={2} color="#ffffff" />
-            <IceTerrain /> <SnowStorm /> <Cloud position={[0, 100, 0]} opacity={0.3} speed={0.4} width={200} depth={200} segments={40} color="#ffffff" />
-            <FollowerAvatars controlsRef={cameraControlsRef} list={iceFollowers} defaultColor="#00ffff" /> 
-          </>
-        )}
-        {view === 'surface_lava' && (
-          <>
-            <ambientLight intensity={0.4} color="#ff3300" /> <directionalLight position={[-50, 50, -20]} intensity={1.5} color="#ffaa00" />
-            <LavaTerrain /> <AshStorm /> <Cloud position={[0, 100, 0]} opacity={0.6} speed={0.8} width={200} depth={200} segments={40} color="#110000" />
-            <FollowerAvatars controlsRef={cameraControlsRef} list={lavaFollowers} defaultColor="#ffaa00" /> 
+            <GlowingTrees /> <FloatingIsland />
           </>
         )}
       </Canvas>
