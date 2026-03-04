@@ -6,7 +6,7 @@ import { Text, Billboard, useTexture, Stars, Html, useGLTF, Clone, useAnimations
 // FOLLOWER LISTS AND HIERARCHY
 const genesisFollowers = [
   "@lifeofcesi", "@sswmyya", "@elifertenx", 
-  "@croyalewgf", "@eliferonat",  "@ahshshshssa", "@zeynepertenx", "@bengisuecemgulumser", "@ggamzeozalp", "@toni.41701", "betulcakkrr", "@michaeusz","@_martinolex_", "@salih.aslnl", "@melkerwahlsten", "@shaynewilley","@me_who_does_things","@saadkhalid32", "trammellryder", "@mns.yylmz",  "@cindybecomingher", "@daringtodreamnow", "off_the_hook_by_jojo" 
+  "@croyalewgf", "@eliferonat",  "@ahshshshssa", "@zeynepertenx", "@bengisuecemgulumser", "@ggamzeozalp", "@toni.41701", "betulcakkrr", "@michaeusz","@_martinolex_", "@aslnlbedirhan", "@melkerwahlsten", "@shaynewilley","@me_who_does_things","@saadkhalid32", "trammellryder", "@mns.yylmz", "collinduvernois4802", "@peashooter1759", "@cindybecomingher", "@daringtodreamnow", "@off_the_hook_by_jojo", "@ravi.talks001", "@pachamongrel", "@max.turns.10", "@shufflewithsimran", "@cirock09", "@thesurgeonisinspired", "@salih.aslnl", "@jimbofuckinslice", "@cesiwa", "@bimcell", "@goesbymothy_tim", "@joshuaalexander859"
   
 ]
 const iceFollowers = []
@@ -21,9 +21,9 @@ function SunSystem({ focusedTarget, setFocusedTarget, controlsRef }) {
   
   return (
     <group onClick={(e) => { e.stopPropagation(); setFocusedTarget('sun'); }} onPointerOver={(e) => { e.stopPropagation(); document.body.style.cursor = 'pointer'; }} onPointerOut={() => { document.body.style.cursor = 'auto'; }}>
-      <mesh><sphereGeometry args={[8, 64, 64]} /><meshBasicMaterial map={sunTexture} color="#ffffff" /></mesh>
-      <mesh scale={[1.05, 1.05, 1.05]}><sphereGeometry args={[8, 64, 64]} /><meshBasicMaterial color="#ffdd00" transparent opacity={0.3} depthWrite={false} /></mesh>
-      <mesh scale={[1.2, 1.2, 1.2]}><sphereGeometry args={[8, 64, 64]} /><meshBasicMaterial color="#ffaa00" transparent opacity={0.15} side={THREE.BackSide} depthWrite={false} /></mesh>
+      <mesh><sphereGeometry args={[25, 64, 64]} /><meshBasicMaterial map={sunTexture} color="#ffffff" /></mesh>
+      <mesh scale={[1.1, 1.1, 1.1]}><sphereGeometry args={[25, 64, 64]} /><meshBasicMaterial color="#ffdd00" transparent opacity={0.3} depthWrite={false} /></mesh>
+      <mesh scale={[1.25, 1.25, 1.25]}><sphereGeometry args={[25, 64, 64]} /><meshBasicMaterial color="#ffaa00" transparent opacity={0.15} side={THREE.BackSide} depthWrite={false} /></mesh>
       <pointLight intensity={400} distance={1000} decay={1.5} color="#ffaa00" />
 
       {/* === GÜNEŞİN TEPESİNDEKİ YARATICI - YENİ GOD.GLB MODELİ === */}
@@ -50,14 +50,14 @@ function CennetGezegen({ onEnter, planetRef, setFocusedTarget }) {
   return (
     <group ref={planetRef}>
       <mesh onClick={(e) => { e.stopPropagation(); setFocusedTarget('genesis'); setShowPanel(true); }} onPointerOver={(e) => { e.stopPropagation(); document.body.style.cursor = 'pointer'; }} onPointerOut={() => { document.body.style.cursor = 'auto'; }}>
-        <sphereGeometry args={[2.8, 64, 64]} /> <meshStandardMaterial map={texture} roughness={0.4} metalness={0.1} />
+        <sphereGeometry args={[10, 64, 64]} /> <meshStandardMaterial map={texture} roughness={0.4} metalness={0.1} />
       </mesh>
-      <mesh scale={[1.08, 1.08, 1.08]}><sphereGeometry args={[2.8, 64, 64]} /><meshBasicMaterial color="#33ff66" transparent opacity={0.2} depthWrite={false} side={THREE.BackSide} /></mesh>
+      <mesh scale={[1.1, 1.1, 1.1]}><sphereGeometry args={[10, 64, 64]} /><meshBasicMaterial color="#33ff66" transparent opacity={0.25} depthWrite={false} side={THREE.BackSide} /></mesh>
       
       <group rotation={[Math.PI / 3, 0, 0]}>
          <Ring args={[3.5, 5, 64]} ><meshBasicMaterial color="#ffd700" transparent opacity={0.3} side={THREE.DoubleSide} /></Ring>
       </group>
-      <Text ref={textRef} position={[0, 6, 0]} fontSize={0.7} color="#ffd700" anchorX="center" anchorY="middle" outlineWidth={0.02} outlineColor="#000000">
+      <Text ref={textRef} position={[0, 15, 0]} fontSize={4} color="#ffd700" anchorX="center" anchorY="middle" outlineWidth={0.1} outlineColor="#000000">
         TOP 1000 FOLLOWERS
       </Text>
 
@@ -80,9 +80,9 @@ function BuzulGezegen({ onEnter, planetRef, setFocusedTarget }) {
   return (
     <group ref={planetRef}>
       <mesh onClick={(e) => { e.stopPropagation(); setFocusedTarget('ice'); setShowPanel(true); }} onPointerOver={(e) => { e.stopPropagation(); document.body.style.cursor = 'pointer'; }} onPointerOut={() => { document.body.style.cursor = 'auto'; }}>
-        <sphereGeometry args={[3, 64, 64]} /> <meshStandardMaterial map={texture} roughness={0.6} />
+        <sphereGeometry args={[10, 64, 64]} /> <meshStandardMaterial map={texture} roughness={0.6} />
       </mesh>
-      <mesh scale={[1.08, 1.08, 1.08]}><sphereGeometry args={[3, 64, 64]} /><meshBasicMaterial color="#0066ff" transparent opacity={0.2} depthWrite={false} side={THREE.BackSide} /></mesh>
+      <mesh scale={[1.1, 1.1, 1.1]}><sphereGeometry args={[10, 64, 64]} /><meshBasicMaterial color="#0066ff" transparent opacity={0.25} depthWrite={false} side={THREE.BackSide} /></mesh>
       {showPanel && (
         <Html position={[3.5, 0, 0]} center>
           <div style={{ background: 'rgba(0, 10, 20, 0.85)', border: '1px solid #00ffff', boxShadow: '0 0 20px rgba(0, 255, 255, 0.6)', padding: '20px', borderRadius: '4px', color: '#00ffff', fontFamily: '"Courier New", Courier, monospace', width: '240px', backdropFilter: 'blur(4px)', pointerEvents: 'auto', userSelect: 'none', textTransform: 'uppercase' }}>
@@ -102,9 +102,9 @@ function VolkanikGezegen({ onEnter, planetRef, setFocusedTarget }) {
   return (
     <group ref={planetRef}>
       <mesh onClick={(e) => { e.stopPropagation(); setFocusedTarget('lava'); setShowPanel(true); }} onPointerOver={(e) => { e.stopPropagation(); document.body.style.cursor = 'pointer'; }} onPointerOut={() => { document.body.style.cursor = 'auto'; }}>
-        <sphereGeometry args={[3.5, 64, 64]} /> <meshStandardMaterial map={texture} roughness={0.8} emissive="#330000" emissiveIntensity={0.5} />
+        <sphereGeometry args={[10, 64, 64]} /> <meshStandardMaterial map={texture} roughness={0.8} emissive="#330000" emissiveIntensity={0.5} />
       </mesh>
-      <mesh scale={[1.08, 1.08, 1.08]}><sphereGeometry args={[3.5, 64, 64]} /><meshBasicMaterial color="#ff3300" transparent opacity={0.25} depthWrite={false} side={THREE.BackSide} /></mesh>
+      <mesh scale={[1.1, 1.1, 1.1]}><sphereGeometry args={[10, 64, 64]} /><meshBasicMaterial color="#ff3300" transparent opacity={0.25} depthWrite={false} side={THREE.BackSide} /></mesh>
       {showPanel && (
         <Html position={[4, 0, 0]} center>
           <div style={{ background: 'rgba(20, 0, 0, 0.85)', border: '1px solid #ff3300', boxShadow: '0 0 20px rgba(255, 51, 0, 0.6)', padding: '20px', borderRadius: '4px', color: '#ff3300', fontFamily: '"Courier New", Courier, monospace', width: '240px', backdropFilter: 'blur(4px)', pointerEvents: 'auto', userSelect: 'none', textTransform: 'uppercase' }}>
@@ -148,9 +148,9 @@ function SolarSystemOrbits({ onEnter, focusedTarget, setFocusedTarget, controlsR
 
   return (
     <>
-      <group ref={orbitRefGenesis} rotation={[0, Math.PI / 4, 0]}><group position={[28, 0, 0]}><CennetGezegen onEnter={onEnter} planetRef={planetRefGenesis} setFocusedTarget={setFocusedTarget} /></group></group>
-      <group ref={orbitRefLava} rotation={[0, Math.PI, 0]}><group position={[20, 0, 0]}><VolkanikGezegen onEnter={onEnter} planetRef={planetRefLava} setFocusedTarget={setFocusedTarget} /></group></group>
-      <group ref={orbitRefIce} rotation={[0, -Math.PI / 2, 0]}><group position={[35, 0, 0]}><BuzulGezegen onEnter={onEnter} planetRef={planetRefIce} setFocusedTarget={setFocusedTarget} /></group></group>
+      <group ref={orbitRefGenesis} rotation={[0, Math.PI / 4, 0]}><group position={[80, 0, 0]}><CennetGezegen onEnter={onEnter} planetRef={planetRefGenesis} setFocusedTarget={setFocusedTarget} /></group></group>
+      <group ref={orbitRefLava} rotation={[0, Math.PI, 0]}><group position={[55, 0, 0]}><VolkanikGezegen onEnter={onEnter} planetRef={planetRefLava} setFocusedTarget={setFocusedTarget} /></group></group>
+      <group ref={orbitRefIce} rotation={[0, -Math.PI / 2, 0]}><group position={[115, 0, 0]}><BuzulGezegen onEnter={onEnter} planetRef={planetRefIce} setFocusedTarget={setFocusedTarget} /></group></group>
     </>
   )
 }
@@ -366,6 +366,107 @@ function Astronaut({ position, name, controlsRef, nameColor = '#ffffff', scale =
     </group>
   )
 }
+function MemoryCoreHologram({ list, setFocusedTarget }) {
+  const group = useRef()
+  const textureRef = useRef()
+  const cylinderRef = useRef()
+  
+  const { scene, animations } = useGLTF('/memory_core.glb')
+  const { actions, names } = useAnimations(animations, group)
+
+  useEffect(() => {
+    if (names.length > 0) actions[names[0]]?.reset().play()
+    scene.traverse((obj) => {
+      if (obj.name === 'Hologram_screen') obj.visible = false 
+    })
+  }, [actions, names, scene])
+
+  const canvasTexture = useMemo(() => {
+    const canvas = document.createElement('canvas')
+    canvas.width = 1024
+    canvas.height = 2048
+    const ctx = canvas.getContext('2d')
+    ctx.font = 'Bold 40px Courier New'
+    ctx.fillStyle = '#107c29'
+    ctx.textAlign = 'center'
+    
+    list.forEach((name, i) => {
+      ctx.fillText(name.toUpperCase(), 512, 100 + i * 60)
+    })
+    
+    const tex = new THREE.CanvasTexture(canvas)
+    tex.wrapS = tex.wrapT = THREE.RepeatWrapping
+    textureRef.current = tex
+    return tex
+  }, [list])
+
+  useFrame((state, delta) => {
+    if (textureRef.current) {
+      textureRef.current.offset.y -= delta * 0.15;
+      textureRef.current.needsUpdate = true;
+    }
+    if (cylinderRef.current) {
+      cylinderRef.current.rotation.y += delta * 0.2;
+      cylinderRef.current.position.y = Math.sin(state.clock.elapsedTime) * 0.2;
+    }
+  });
+
+  return (
+    <group position={[80, 20, 20]} scale={1}>
+      {/* İSTASYONUN ÜSTÜNDEKİ DEV YAZI */}
+      <Billboard
+        position={[0, 10, 0]} // İstasyonun üstündeki konumu
+        follow={true}
+      >
+        <group>
+         {/* ANA BAŞLIK */}
+         <Text 
+           fontSize={1.5} 
+            color="#0a7a2e" 
+            anchorX="center" 
+            outlineWidth={0.05}
+            outlineColor="#000000"
+          >
+           ||| MEMORY CORE |||
+          </Text>
+
+          {/* YENİ: TAKİPÇİ SAYACI */}
+          <Text 
+            position={[0, -1.5, 0]} // Ana yazının hemen altına hizaladım
+            fontSize={0.5} 
+            color="#24d04c" // Hacker yeşili, akıştaki isimlerle uyumlu
+            anchorX="center" 
+            outlineWidth={0.03}
+            outlineColor="#000000"
+          >
+            Universe Population: 37 / ∞
+          </Text>
+        </group>
+      </Billboard>
+
+      <group ref={group}>
+        <primitive object={scene} />
+      </group>
+
+      <mesh 
+        ref={cylinderRef} 
+        onClick={(e) => { e.stopPropagation(); setFocusedTarget('memory_core'); }}
+        onPointerOver={() => (document.body.style.cursor = 'pointer')}
+        onPointerOut={() => (document.body.style.cursor = 'auto')}
+      >
+        <cylinderGeometry args={[4.2, 4.2, 13, 64, 1, true]} /> 
+        <meshBasicMaterial 
+          map={canvasTexture} 
+          transparent={true} 
+          opacity={0.9} 
+          side={THREE.DoubleSide} 
+          blending={THREE.AdditiveBlending}
+          depthWrite={false}
+        />
+      </mesh>
+    </group>
+  )
+}
 function GenesisHierarchy({ controlsRef, list }) {
   const baseY = 3; 
   const columns = [];
@@ -402,7 +503,7 @@ function GenesisHierarchy({ controlsRef, list }) {
         } else {
            // --- GERİ KALAN HERKES (RASTGELE DAĞILIM) ---
            
-           if (index >= 3 && index < 20) {
+           if (index >= 3 && index < 22) {
               nameColor = '#ffcc00'; 
               modelPath = `/vip_${index + 1}.glb`; 
               
@@ -483,8 +584,8 @@ function GenesisHierarchy({ controlsRef, list }) {
                  textSize = 1;
               }
               else if (index === 17) { 
-                 scale = 2.7;  // 11. Takipçi
-                 nameY = 7.2; 
+                 scale = 4.2;  // 11. Takipçi
+                 nameY = 8.4; 
                  textSize = 1;
               }
               else if (index === 18) { 
@@ -497,20 +598,30 @@ function GenesisHierarchy({ controlsRef, list }) {
                  nameY = 7.2; 
                  textSize = 1;
               }
+              else if (index === 20) { 
+                 scale = 2.7;  // 11. Takipçi
+                 nameY = 8.4; 
+                 textSize = 1;
+              }
+              else if (index === 21) { 
+                 scale = 2.7;  // 11. Takipçi
+                 nameY = 8.4; 
+                 textSize = 1;
+              }
            } else {
               // 12. KİŞİ VE SONRASI STANDART VATANDAŞ
               nameColor = '#ffcc00'; 
               scale = 3.6; // Standart vatandaşın boyutu
-              nameY = 8.8;
+              nameY = 25.8;
               textSize = 1;
-              mOffset = [0, 3.5, 0];
+              mOffset = [0, 20.5, 0];
               modelPath = '/standartvatandas.glb'; 
            }
 
            // Rastgele dağılım kodun (Burası senin efsane algoritman, hiç ellemedim)
            do {
-             x = (Math.random() - 0.5) * 200; 
-             z = (Math.random() - 0.5) * 200;
+             x = (Math.random() - 0.5) * 300; 
+             z = (Math.random() - 0.5) * 300;
              
              if (Math.abs(x) < 20 && Math.abs(z) < 35) {
                 x += (x > 0 ? 40 : -40);
@@ -561,7 +672,11 @@ try {
   useGLTF.preload('/vip_18.glb');
   useGLTF.preload('/vip_19.glb');
   useGLTF.preload('/vip_20.glb');
+  useGLTF.preload('/vip_21.glb');
+  useGLTF.preload('/vip_22.glb');
   useGLTF.preload('/standartvatandas.glb');
+  useGLTF.preload('/space_station');
+  useGLTF.preload('/memory_core.glb');
 } catch (e) { }
 // ==========================================
 // 3. BÖLÜM: KAMERA VE ANA UYGULAMA
@@ -617,7 +732,26 @@ function SceneController({ view, controlsRef }) {
   }, [view, scene, controlsRef])
   return null
 }
+function SpaceStationModel({ position, scale, setFocusedTarget }) {
+  const { scene } = useGLTF('/space_station.glb')
 
+  return (
+    
+    <group position={position}>
+      {/* İSTASYONA VURAN ÖZEL IŞIK */}
+      <pointLight intensity={150} distance={50} color="#ffffff" position={[5, 10, 5]} />
+      <spotLight position={[0, 20, 10]} intensity={300} angle={0.3} penumbra={1} color="#4488ff" /> 
+
+      <primitive 
+        object={scene} 
+        scale={scale} 
+        onClick={(e) => { e.stopPropagation(); setFocusedTarget('space_station'); }}
+        onPointerOver={() => (document.body.style.cursor = 'pointer')}
+        onPointerOut={() => (document.body.style.cursor = 'auto')}
+      />
+    </group>
+  )
+}
 function App() {
   const [view, setView] = useState('galaxy') 
   const [focusedTarget, setFocusedTarget] = useState('sun')
@@ -625,34 +759,47 @@ function App() {
   const cameraControlsRef = useRef()
   const videoRef = useRef(null)
   
-  // YENİ: Kuş sesleri için birdsRef eklendi
   const windRef = useRef(null); 
   const fireRef = useRef(null); 
   const stepRef = useRef(null);
   const birdsRef = useRef(null); 
 
-  // YENİ: Gezegene girildiğinde hem arka plan sesini hem de ayak sesini (src) dinamik değiştiren sistem
+  // KAMERA ODAKLANMA SİSTEMİ (Yeni Hedef: memory_core eklendi)
+  useEffect(() => {
+   if (!cameraControlsRef.current) return;
+
+   if (focusedTarget === 'sun') {
+     // Güneş artık dev (yarıçap 25), o yüzden kamerayı 80 birim uzağa koyuyoruz
+      cameraControlsRef.current.setLookAt(0, 40, 80, 0, 0, 0, true);
+   } 
+   else if (focusedTarget === 'memory_core') {
+     // Yeni konumun [80, 20, 20]. Yakın çekim için:
+     cameraControlsRef.current.setLookAt(100, 40, 50, 80, 20, 20, true);
+   }
+   else if (focusedTarget === 'space_station') {
+     // İstasyon konumu [65, 20, 20]. Yakın çekim için:
+      cameraControlsRef.current.setLookAt(85, 40, 60, 75, 10, 20, true);
+   }
+}, [focusedTarget]);
+
+  // SES SİSTEMİ
   useEffect(() => {
     if (view === 'surface_genesis') {
       if (fireRef.current) fireRef.current.pause();
       if (windRef.current) windRef.current.pause(); 
-      // Cennete girildiğinde kuş sesini başlat ve ayak sesini çimen yap
       if (birdsRef.current) { birdsRef.current.volume = 0.5; birdsRef.current.play(); }
       if (stepRef.current) stepRef.current.src = "/grass_step.mp3"; 
     } else if (view === 'surface_ice') {
       if (fireRef.current) fireRef.current.pause();
       if (birdsRef.current) birdsRef.current.pause();
-      // Buza girildiğinde rüzgarı başlat ve ayak sesini kar yap
       if (windRef.current) { windRef.current.volume = 0.4; windRef.current.play(); }
       if (stepRef.current) stepRef.current.src = "/snow_step.mp3";
     } else if (view === 'surface_lava') {
       if (windRef.current) windRef.current.pause();
       if (birdsRef.current) birdsRef.current.pause();
-      // LAv'a girildiğinde ateşi başlat ve ayak sesini taş/kıvılcım yap
       if (fireRef.current) { fireRef.current.volume = 0.5; fireRef.current.play(); }
       if (stepRef.current) stepRef.current.src = "/stone_step.mp3";
     } else {
-      // Galaksideyken tüm sesleri sustur
       if (windRef.current) windRef.current.pause();
       if (fireRef.current) fireRef.current.pause();
       if (birdsRef.current) birdsRef.current.pause();
@@ -687,10 +834,16 @@ function App() {
           <div style={menuItemStyle('genesis', '#ffd700')} onClick={() => setFocusedTarget('genesis')}>[1] Elysium Prime</div>
           <div style={menuItemStyle('lava', '#ff3300')} onClick={() => setFocusedTarget('lava')}>[2] Ignis Prime</div>
           <div style={menuItemStyle('ice', '#00ffff')} onClick={() => setFocusedTarget('ice')}>[3] Frozen</div>
+          
+          {/* YENİ MENÜ ÖĞESİ */}
+          <div style={menuItemStyle('memory_core', '#13630c')} onClick={() => setFocusedTarget('memory_core')}>[4] Memory Core</div>
+          {/* Mevcut menü öğelerinin altına ekle */}
+          <div style={menuItemStyle('space_station', '#888888')} onClick={() => setFocusedTarget('space_station')}>
+          [5] Space Station
+          </div>
         </div>
       )}
       
-      {/* YENİ: Ses dosyalarının HTML etiketleri */}
       <audio ref={windRef} src="/wind.mp3" loop /> 
       <audio ref={fireRef} src="/fire.mp3" loop /> 
       <audio ref={birdsRef} src="/birds.mp3" loop /> 
@@ -709,6 +862,20 @@ function App() {
             <ambientLight intensity={0.2} color="#ffffff" /> 
             <SunSystem focusedTarget={focusedTarget} setFocusedTarget={setFocusedTarget} controlsRef={cameraControlsRef} />
             <SolarSystemOrbits onEnter={handleEnterPlanet} focusedTarget={focusedTarget} setFocusedTarget={setFocusedTarget} controlsRef={cameraControlsRef} />
+            
+            {/* PARAMETRELER GÜNCELLENDİ */}
+            <MemoryCoreHologram 
+              list={genesisFollowers} 
+              setFocusedTarget={setFocusedTarget} 
+              cameraControlsRef={cameraControlsRef} 
+            />
+            {/* YENİ: ANA UZAY İSTASYONU */}
+            <SpaceStationModel 
+             position={[90, 20, 35]} // Memory Core'un 15 birim soluna koyduk
+             scale={0.2} 
+             setFocusedTarget={setFocusedTarget}
+            />
+            
             <Stars radius={150} depth={50} count={5000} factor={4} fade speed={1} />
           </>
         )}
