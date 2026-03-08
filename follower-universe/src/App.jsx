@@ -1,16 +1,11 @@
 import * as THREE from 'three'
-import { useState, useMemo, useEffect, useRef } from 'react'
+import { useState, useMemo, useEffect, useRef, Suspense } from 'react' // Suspense eklendi
 import { Canvas, useThree, useFrame } from '@react-three/fiber'
 import { Text, Billboard, useTexture, Stars, Html, useGLTF, Clone, useAnimations, CameraControls, Cloud, Ring } from '@react-three/drei'
 
-// FOLLOWER LISTS AND HIERARCHY
-const genesisFollowers = [
-  "@lifeofcesi", "@sswmyya", "@elifertenx", 
-  "@croyalewgf", "@eliferonat",  "@ahshshshssa", "@zeynepertenx", "@bengisuecemgulumser", "@ggamzeozalp", "@toni.41701", "betulcakkrr", "@michaeusz","@_martinolex_", "@aslnlbedirhan", "@melkerwahlsten", "@shaynewilley","@me_who_does_things","@saadkhalid32", "trammellryder", "@mns.yylmz", "collinduvernois4802", "@peashooter1759", "@cindybecomingher", "@daringtodreamnow", "@off_the_hook_by_jojo", "@ravi.talks001", "@pachamongrel", "@max.turns.10", "@shufflewithsimran", "@cirock09", "@thesurgeonisinspired", "@salih.aslnl", "@jimbofuckinslice", "@cesiwa", "@bimcell", "@goesbymothy_tim", "@joshuaalexander859"
-  
-]
-const iceFollowers = []
-const lavaFollowers = []
+import genesisFollowers from './data/genesisFollowers.json'
+import iceFollowers from './data/iceFollowers.json'
+import lavaFollowers from './data/lavaFollowers.json'
 
 const waterLevel = -6.6;
 
@@ -18,7 +13,7 @@ const waterLevel = -6.6;
 function SunSystem({ focusedTarget, setFocusedTarget, controlsRef }) {
   const sunTexture = useTexture('/sun.jpg')
   useEffect(() => { if (focusedTarget === 'sun' && controlsRef.current) { controlsRef.current.setLookAt(0, 90, 140, 0, 0, 0, true) } }, [focusedTarget, controlsRef])
-  
+
   return (
     <group onClick={(e) => { e.stopPropagation(); setFocusedTarget('sun'); }} onPointerOver={(e) => { e.stopPropagation(); document.body.style.cursor = 'pointer'; }} onPointerOut={() => { document.body.style.cursor = 'auto'; }}>
       <mesh><sphereGeometry args={[25, 64, 64]} /><meshBasicMaterial map={sunTexture} color="#ffffff" /></mesh>
@@ -29,13 +24,13 @@ function SunSystem({ focusedTarget, setFocusedTarget, controlsRef }) {
       {/* === GÜNEŞİN TEPESİNDEKİ YARATICI - YENİ GOD.GLB MODELİ === */}
       <Astronaut
         position={[0, 12.5, 0]} // Eğer model yamuk/aşağıda durursa bu sayılarla oyna (Örn: y eksenini 12.5 yap)
-        name="THE CREATOR" 
+        name="THE CREATOR"
         scale={2.5} // God modeli çok küçük veya büyük gelirse burayı değiştir
-        nameColor="#731810fe" 
-        glow="#ffffff" 
-        controlsRef={controlsRef} 
+        nameColor="#731810fe"
+        glow="#ffffff"
+        controlsRef={controlsRef}
         nameY={1.9} // Yazı kafasının içine girerse bunu büyüt
-        textSize={0.5} 
+        textSize={0.5}
         modelPath='/tanri.glb' // İŞTE YENİ TANRI MODELİMİZ!
       />
     </group>
@@ -45,7 +40,7 @@ function SunSystem({ focusedTarget, setFocusedTarget, controlsRef }) {
 function CennetGezegen({ onEnter, planetRef, setFocusedTarget }) {
   const texture = useTexture('/paradiseplanet.jpg'); const [showPanel, setShowPanel] = useState(false);
   const textRef = useRef();
-  useFrame((state) => { if(textRef.current) textRef.current.lookAt(state.camera.position) });
+  useFrame((state) => { if (textRef.current) textRef.current.lookAt(state.camera.position) });
 
   return (
     <group ref={planetRef}>
@@ -53,9 +48,9 @@ function CennetGezegen({ onEnter, planetRef, setFocusedTarget }) {
         <sphereGeometry args={[10, 64, 64]} /> <meshStandardMaterial map={texture} roughness={0.4} metalness={0.1} />
       </mesh>
       <mesh scale={[1.1, 1.1, 1.1]}><sphereGeometry args={[10, 64, 64]} /><meshBasicMaterial color="#33ff66" transparent opacity={0.25} depthWrite={false} side={THREE.BackSide} /></mesh>
-      
+
       <group rotation={[Math.PI / 3, 0, 0]}>
-         <Ring args={[3.5, 5, 64]} ><meshBasicMaterial color="#ffd700" transparent opacity={0.3} side={THREE.DoubleSide} /></Ring>
+        <Ring args={[3.5, 5, 64]} ><meshBasicMaterial color="#ffd700" transparent opacity={0.3} side={THREE.DoubleSide} /></Ring>
       </group>
       <Text ref={textRef} position={[0, 15, 0]} fontSize={4} color="#ffd700" anchorX="center" anchorY="middle" outlineWidth={0.1} outlineColor="#000000">
         TOP 1000 FOLLOWERS
@@ -66,7 +61,7 @@ function CennetGezegen({ onEnter, planetRef, setFocusedTarget }) {
           <div style={{ background: 'rgba(0, 20, 5, 0.85)', border: '1px solid #ffd700', boxShadow: '0 0 20px rgba(255, 215, 0, 0.6)', padding: '20px', borderRadius: '4px', color: '#ffd700', fontFamily: '"Courier New", Courier, monospace', width: '240px', backdropFilter: 'blur(4px)', pointerEvents: 'auto', userSelect: 'none', textTransform: 'uppercase' }}>
             <div onClick={(e) => { e.stopPropagation(); setShowPanel(false); }} style={{ position: 'absolute', top: '10px', right: '15px', cursor: 'pointer', fontSize: '18px', fontWeight: 'bold' }}>×</div>
             <h3 style={{ margin: '0 0 15px 0', borderBottom: '2px solid #ffd700', paddingBottom: '10px', letterSpacing: '3px', fontSize: '18px' }}>/// SYS_GENESIS</h3>
-            <div style={{ fontSize: '13px', lineHeight: '1.8', color: '#aaffaa' }}><p style={{ margin: '0' }}>Elysium Prime</p><p style={{ margin: '0' }}>TYPE: <span style={{fontWeight: 'bold', color: '#ffd700'}}>Paradise / Founders</span></p><p style={{ margin: '15px 0 0 0', borderTop: '1px dotted #ffd700', paddingTop: '10px' }}>VIP FOUNDERS: <span style={{fontWeight: 'bold', fontSize: '16px', color: '#ffd700'}}>{genesisFollowers.length}/1000</span></p></div>
+            <div style={{ fontSize: '13px', lineHeight: '1.8', color: '#aaffaa' }}><p style={{ margin: '0' }}>Elysium Prime</p><p style={{ margin: '0' }}>TYPE: <span style={{ fontWeight: 'bold', color: '#ffd700' }}>Paradise / Founders</span></p><p style={{ margin: '15px 0 0 0', borderTop: '1px dotted #ffd700', paddingTop: '10px' }}>VIP FOUNDERS: <span style={{ fontWeight: 'bold', fontSize: '16px', color: '#ffd700' }}>{genesisFollowers.length}/1000</span></p></div>
             <button onClick={(e) => { e.stopPropagation(); setShowPanel(false); onEnter('genesis'); }} style={{ marginTop: '20px', width: '100%', padding: '10px', background: 'rgba(255, 215, 0, 0.1)', border: '1px solid #ffd700', color: '#ffd700', fontSize: '13px', fontWeight: 'bold', cursor: 'pointer', fontFamily: '"Courier New", Courier, monospace', animation: 'pulseGold 1.5s infinite' }}>[ ENTER PARADISE ]</button>
           </div>
         </Html>
@@ -88,7 +83,7 @@ function BuzulGezegen({ onEnter, planetRef, setFocusedTarget }) {
           <div style={{ background: 'rgba(0, 10, 20, 0.85)', border: '1px solid #00ffff', boxShadow: '0 0 20px rgba(0, 255, 255, 0.6)', padding: '20px', borderRadius: '4px', color: '#00ffff', fontFamily: '"Courier New", Courier, monospace', width: '240px', backdropFilter: 'blur(4px)', pointerEvents: 'auto', userSelect: 'none', textTransform: 'uppercase' }}>
             <div onClick={(e) => { e.stopPropagation(); setShowPanel(false); }} style={{ position: 'absolute', top: '10px', right: '15px', cursor: 'pointer', fontSize: '18px', fontWeight: 'bold' }}>×</div>
             <h3 style={{ margin: '0 0 15px 0', borderBottom: '2px solid #00ffff', paddingBottom: '10px', letterSpacing: '3px', fontSize: '18px' }}>/// SYS_FROZEN</h3>
-            <div style={{ fontSize: '13px', lineHeight: '1.8' }}><p style={{ margin: '0' }}>Frozen</p><p style={{ margin: '0' }}>TYPE: <span style={{fontWeight: 'bold'}}>Cryo-Giant</span></p><p style={{ margin: '15px 0 0 0', borderTop: '1px dotted #00ffff', paddingTop: '10px' }}>LIFEFORMS: <span style={{fontWeight: 'bold', fontSize: '16px'}}>{iceFollowers.length}</span></p></div>
+            <div style={{ fontSize: '13px', lineHeight: '1.8' }}><p style={{ margin: '0' }}>Frozen</p><p style={{ margin: '0' }}>TYPE: <span style={{ fontWeight: 'bold' }}>Cryo-Giant</span></p><p style={{ margin: '15px 0 0 0', borderTop: '1px dotted #00ffff', paddingTop: '10px' }}>LIFEFORMS: <span style={{ fontWeight: 'bold', fontSize: '16px' }}>{iceFollowers.length}</span></p></div>
             <button onClick={(e) => { e.stopPropagation(); setShowPanel(false); onEnter('ice'); }} style={{ marginTop: '20px', width: '100%', padding: '10px', background: 'rgba(0, 255, 255, 0.1)', border: '1px solid #00ffff', color: '#00ffff', fontSize: '13px', fontWeight: 'bold', cursor: 'pointer', fontFamily: '"Courier New", Courier, monospace' }}>[ INITIATE LANDING ]</button>
           </div>
         </Html>
@@ -110,7 +105,7 @@ function VolkanikGezegen({ onEnter, planetRef, setFocusedTarget }) {
           <div style={{ background: 'rgba(20, 0, 0, 0.85)', border: '1px solid #ff3300', boxShadow: '0 0 20px rgba(255, 51, 0, 0.6)', padding: '20px', borderRadius: '4px', color: '#ff3300', fontFamily: '"Courier New", Courier, monospace', width: '240px', backdropFilter: 'blur(4px)', pointerEvents: 'auto', userSelect: 'none', textTransform: 'uppercase' }}>
             <div onClick={(e) => { e.stopPropagation(); setShowPanel(false); }} style={{ position: 'absolute', top: '10px', right: '15px', cursor: 'pointer', fontSize: '18px', fontWeight: 'bold', color: '#ff3300' }}>×</div>
             <h3 style={{ margin: '0 0 15px 0', borderBottom: '2px solid #ff3300', paddingBottom: '10px', letterSpacing: '3px', fontSize: '18px', color: '#ffaa00' }}>/// SYS_MAGMA</h3>
-            <div style={{ fontSize: '13px', lineHeight: '1.8', color: '#ffaa00' }}><p style={{ margin: '0' }}>Ignis Prime</p><p style={{ margin: '0' }}>TYPE: <span style={{fontWeight: 'bold', color: '#ff3300'}}>Volcanic Class-X</span></p><p style={{ margin: '15px 0 0 0', borderTop: '1px dotted #ff3300', paddingTop: '10px' }}>LIFEFORMS: <span style={{fontWeight: 'bold', fontSize: '16px', color: '#ff3300'}}>{lavaFollowers.length}</span></p></div>
+            <div style={{ fontSize: '13px', lineHeight: '1.8', color: '#ffaa00' }}><p style={{ margin: '0' }}>Ignis Prime</p><p style={{ margin: '0' }}>TYPE: <span style={{ fontWeight: 'bold', color: '#ff3300' }}>Volcanic Class-X</span></p><p style={{ margin: '15px 0 0 0', borderTop: '1px dotted #ff3300', paddingTop: '10px' }}>LIFEFORMS: <span style={{ fontWeight: 'bold', fontSize: '16px', color: '#ff3300' }}>{lavaFollowers.length}</span></p></div>
             <button onClick={(e) => { e.stopPropagation(); setShowPanel(false); onEnter('lava'); }} style={{ marginTop: '20px', width: '100%', padding: '10px', background: 'rgba(255, 51, 0, 0.1)', border: '1px solid #ff3300', color: '#ffaa00', fontSize: '13px', fontWeight: 'bold', cursor: 'pointer', fontFamily: '"Courier New", Courier, monospace' }}>[ INITIATE LANDING ]</button>
           </div>
         </Html>
@@ -160,24 +155,24 @@ function SolarSystemOrbits({ onEnter, focusedTarget, setFocusedTarget, controlsR
 // ==========================================
 
 function getElevation(worldX, worldZ) {
-  const planeX = worldX; const planeY = -worldZ; 
+  const planeX = worldX; const planeY = -worldZ;
   const largeMountains = Math.sin(planeX * 0.03) * Math.cos(planeY * 0.03) * 6;
   const smallDetails = Math.sin(planeX * 0.1) * Math.cos(planeY * 0.08) * 1.5;
   const randomNoise = Math.sin(planeX * 0.07 + planeY * 0.05) * 2;
-  let height = largeMountains + smallDetails + randomNoise - 5; 
+  let height = largeMountains + smallDetails + randomNoise - 5;
   const dist = Math.sqrt(worldX * worldX + worldZ * worldZ);
-  const plateauHeight = 3; const plateauRadius = 35; 
-  if (dist < plateauRadius) { height = plateauHeight; } 
+  const plateauHeight = 3; const plateauRadius = 35;
+  if (dist < plateauRadius) { height = plateauHeight; }
   else if (dist < plateauRadius + 15) { const t = (dist - plateauRadius) / 15; const smooth = t * t * (3 - 2 * t); height = plateauHeight * (1 - smooth) + height * smooth; }
-  return height; 
+  return height;
 }
 
 function ParadiseTerrain() {
   const grassTexture = useTexture('/grass.jpg')
-  grassTexture.wrapS = grassTexture.wrapT = THREE.RepeatWrapping; grassTexture.repeat.set(24, 24); 
+  grassTexture.wrapS = grassTexture.wrapT = THREE.RepeatWrapping; grassTexture.repeat.set(24, 24);
   const terrainGeo = useMemo(() => {
     const geo = new THREE.PlaneGeometry(500, 500, 256, 256); const pos = geo.attributes.position;
-    for (let i = 0; i < pos.count; i++) pos.setZ(i, getElevation(pos.getX(i), -pos.getY(i)) + 5) 
+    for (let i = 0; i < pos.count; i++) pos.setZ(i, getElevation(pos.getX(i), -pos.getY(i)) + 5)
     geo.computeVertexNormals(); return geo;
   }, [])
   return (
@@ -199,7 +194,7 @@ function ParadiseWater() {
 
 function Fireflies() {
   const count = 500; const pointsRef = useRef();
-  const positions = useMemo(() => { const pos = new Float32Array(count * 3); for (let i = 0; i < count; i++) { pos[i*3] = (Math.random()-0.5)*400; pos[i*3+1] = Math.random()*50; pos[i*3+2] = (Math.random()-0.5)*400; } return pos; }, [])
+  const positions = useMemo(() => { const pos = new Float32Array(count * 3); for (let i = 0; i < count; i++) { pos[i * 3] = (Math.random() - 0.5) * 400; pos[i * 3 + 1] = Math.random() * 50; pos[i * 3 + 2] = (Math.random() - 0.5) * 400; } return pos; }, [])
   const glowTexture = useMemo(() => {
     const canvas = document.createElement('canvas'); canvas.width = 32; canvas.height = 32; const ctx = canvas.getContext('2d');
     const grad = ctx.createRadialGradient(16, 16, 0, 16, 16, 16);
@@ -207,24 +202,24 @@ function Fireflies() {
     ctx.fillStyle = grad; ctx.fillRect(0, 0, 32, 32); return new THREE.CanvasTexture(canvas);
   }, [])
   useFrame((_, delta) => {
-    if(!pointsRef.current) return; const posArray = pointsRef.current.geometry.attributes.position.array;
-    for (let i = 0; i < count; i++) { posArray[i*3+1] += delta * 1.5; posArray[i*3] += Math.sin(posArray[i*3+1] * 0.1) * delta * 2; if (posArray[i*3+1] > 40) { posArray[i*3+1] = -5; posArray[i*3] = (Math.random()-0.5)*400; posArray[i*3+2] = (Math.random()-0.5)*400; } }
+    if (!pointsRef.current) return; const posArray = pointsRef.current.geometry.attributes.position.array;
+    for (let i = 0; i < count; i++) { posArray[i * 3 + 1] += delta * 1.5; posArray[i * 3] += Math.sin(posArray[i * 3 + 1] * 0.1) * delta * 2; if (posArray[i * 3 + 1] > 40) { posArray[i * 3 + 1] = -5; posArray[i * 3] = (Math.random() - 0.5) * 400; posArray[i * 3 + 2] = (Math.random() - 0.5) * 400; } }
     pointsRef.current.geometry.attributes.position.needsUpdate = true;
   })
-  return ( <points ref={pointsRef}><bufferGeometry><bufferAttribute attach="attributes-position" count={count} array={positions} itemSize={3} /></bufferGeometry><pointsMaterial size={2.5} map={glowTexture} transparent={true} opacity={0.8} sizeAttenuation blending={THREE.AdditiveBlending} depthWrite={false} /></points> )
+  return (<points ref={pointsRef}><bufferGeometry><bufferAttribute attach="attributes-position" count={count} array={positions} itemSize={3} /></bufferGeometry><pointsMaterial size={2.5} map={glowTexture} transparent={true} opacity={0.8} sizeAttenuation blending={THREE.AdditiveBlending} depthWrite={false} /></points>)
 }
 
 function GlowingTrees() {
-  const { scene } = useGLTF('/tree.glb') 
+  const { scene } = useGLTF('/tree.glb')
   const treePositions = useMemo(() => {
     const pos = [];
-    for (let i = 0; i < 40; i++) { 
+    for (let i = 0; i < 40; i++) {
       let x, y, z;
       do {
         x = (Math.random() - 0.5) * 400; z = (Math.random() - 0.5) * 400;
-        if (Math.abs(x) < 40 && Math.abs(z) < 40) continue; 
+        if (Math.abs(x) < 40 && Math.abs(z) < 40) continue;
         y = getElevation(x, z);
-      } while (y < waterLevel + 0.5); 
+      } while (y < waterLevel + 0.5);
       pos.push({ x, y, z, scale: 0.026 + Math.random() * 0.018, rotation: Math.random() * Math.PI });
     }
     return pos;
@@ -244,8 +239,8 @@ function GlowingTrees() {
 function FloatingIsland() {
   const grassTexture = useTexture('/grass.jpg')
   grassTexture.wrapS = grassTexture.wrapT = THREE.RepeatWrapping; grassTexture.repeat.set(4, 4);
-  
-  const islandX = -60; const islandY = 40; const islandZ = -60; 
+
+  const islandX = -60; const islandY = 40; const islandZ = -60;
 
   const count = 1000;
   const pointsRef = useRef();
@@ -254,9 +249,9 @@ function FloatingIsland() {
     for (let i = 0; i < count; i++) {
       const angle = Math.random() * Math.PI * 2;
       const radius = Math.random() * 1.5;
-      pos[i*3] = (islandX + 12) + Math.cos(angle) * radius; 
-      pos[i*3+1] = Math.random() * islandY; 
-      pos[i*3+2] = islandZ + Math.sin(angle) * radius;
+      pos[i * 3] = (islandX + 12) + Math.cos(angle) * radius;
+      pos[i * 3 + 1] = Math.random() * islandY;
+      pos[i * 3 + 2] = islandZ + Math.sin(angle) * radius;
     }
     return pos;
   }, [islandX, islandY, islandZ])
@@ -272,9 +267,9 @@ function FloatingIsland() {
     if (!pointsRef.current) return;
     const posArray = pointsRef.current.geometry.attributes.position.array;
     for (let i = 0; i < count; i++) {
-      posArray[i*3+1] -= delta * (25 + Math.random() * 10); 
-      if (posArray[i*3+1] < waterLevel) { 
-        posArray[i*3+1] = islandY; 
+      posArray[i * 3 + 1] -= delta * (25 + Math.random() * 10);
+      if (posArray[i * 3 + 1] < waterLevel) {
+        posArray[i * 3 + 1] = islandY;
       }
     }
     pointsRef.current.geometry.attributes.position.needsUpdate = true;
@@ -282,7 +277,7 @@ function FloatingIsland() {
 
   const islandGroup = useRef();
   useFrame(({ clock }) => {
-    if(islandGroup.current) islandGroup.current.position.y = islandY + Math.sin(clock.getElapsedTime() * 0.5) * 1.5;
+    if (islandGroup.current) islandGroup.current.position.y = islandY + Math.sin(clock.getElapsedTime() * 0.5) * 1.5;
   })
 
   return (
@@ -313,10 +308,10 @@ function LavaTerrain() {
   const lavaTexture = useTexture('/lava.jpg'); lavaTexture.wrapS = lavaTexture.wrapT = THREE.RepeatWrapping; lavaTexture.repeat.set(16, 16); const terrainGeo = useMemo(() => { const geo = new THREE.PlaneGeometry(500, 500, 256, 256); const pos = geo.attributes.position; for (let i = 0; i < pos.count; i++) pos.setZ(i, getElevation(pos.getX(i), -pos.getY(i)) + 5); geo.computeVertexNormals(); return geo; }, []); return <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -5, 0]} geometry={terrainGeo}><meshStandardMaterial map={lavaTexture} roughness={0.9} emissive="#441100" emissiveIntensity={0.6} /></mesh>
 }
 function SnowStorm() {
-  const count = 5000; const pointsRef = useRef(); const positions = useMemo(() => { const pos = new Float32Array(count * 3); for (let i = 0; i < count; i++) { pos[i*3] = (Math.random()-0.5)*400; pos[i*3+1] = Math.random()*100; pos[i*3+2] = (Math.random()-0.5)*400; } return pos; }, []); useFrame((_, delta) => { if(!pointsRef.current) return; const posArray = pointsRef.current.geometry.attributes.position.array; for (let i = 0; i < count; i++) { posArray[i*3+1] -= delta * 15; if (posArray[i*3+1] < -5) { posArray[i*3+1] = 100; posArray[i*3] = (Math.random()-0.5)*400; posArray[i*3+2] = (Math.random()-0.5)*400; } } pointsRef.current.geometry.attributes.position.needsUpdate = true; }); return ( <points ref={pointsRef}><bufferGeometry><bufferAttribute attach="attributes-position" count={count} array={positions} itemSize={3} /></bufferGeometry><pointsMaterial size={0.6} color="#ffffff" transparent opacity={0.6} sizeAttenuation /></points> )
+  const count = 5000; const pointsRef = useRef(); const positions = useMemo(() => { const pos = new Float32Array(count * 3); for (let i = 0; i < count; i++) { pos[i * 3] = (Math.random() - 0.5) * 400; pos[i * 3 + 1] = Math.random() * 100; pos[i * 3 + 2] = (Math.random() - 0.5) * 400; } return pos; }, []); useFrame((_, delta) => { if (!pointsRef.current) return; const posArray = pointsRef.current.geometry.attributes.position.array; for (let i = 0; i < count; i++) { posArray[i * 3 + 1] -= delta * 15; if (posArray[i * 3 + 1] < -5) { posArray[i * 3 + 1] = 100; posArray[i * 3] = (Math.random() - 0.5) * 400; posArray[i * 3 + 2] = (Math.random() - 0.5) * 400; } } pointsRef.current.geometry.attributes.position.needsUpdate = true; }); return (<points ref={pointsRef}><bufferGeometry><bufferAttribute attach="attributes-position" count={count} array={positions} itemSize={3} /></bufferGeometry><pointsMaterial size={0.6} color="#ffffff" transparent opacity={0.6} sizeAttenuation /></points>)
 }
 function AshStorm() {
-  const count = 3000; const pointsRef = useRef(); const positions = useMemo(() => { const pos = new Float32Array(count * 3); for (let i = 0; i < count; i++) { pos[i*3] = (Math.random()-0.5)*400; pos[i*3+1] = Math.random()*100; pos[i*3+2] = (Math.random()-0.5)*400; } return pos; }, []); useFrame((_, delta) => { if(!pointsRef.current) return; const posArray = pointsRef.current.geometry.attributes.position.array; for (let i = 0; i < count; i++) { posArray[i*3+1] -= delta * 8; posArray[i*3] += delta * 5; if (posArray[i*3+1] < -5) { posArray[i*3+1] = 100; posArray[i*3] = (Math.random()-0.5)*400; posArray[i*3+2] = (Math.random()-0.5)*400; } } pointsRef.current.geometry.attributes.position.needsUpdate = true; }); return ( <points ref={pointsRef}><bufferGeometry><bufferAttribute attach="attributes-position" count={count} array={positions} itemSize={3} /></bufferGeometry><pointsMaterial size={0.8} color="#ff6600" transparent opacity={0.7} sizeAttenuation /></points> )
+  const count = 3000; const pointsRef = useRef(); const positions = useMemo(() => { const pos = new Float32Array(count * 3); for (let i = 0; i < count; i++) { pos[i * 3] = (Math.random() - 0.5) * 400; pos[i * 3 + 1] = Math.random() * 100; pos[i * 3 + 2] = (Math.random() - 0.5) * 400; } return pos; }, []); useFrame((_, delta) => { if (!pointsRef.current) return; const posArray = pointsRef.current.geometry.attributes.position.array; for (let i = 0; i < count; i++) { posArray[i * 3 + 1] -= delta * 8; posArray[i * 3] += delta * 5; if (posArray[i * 3 + 1] < -5) { posArray[i * 3 + 1] = 100; posArray[i * 3] = (Math.random() - 0.5) * 400; posArray[i * 3 + 2] = (Math.random() - 0.5) * 400; } } pointsRef.current.geometry.attributes.position.needsUpdate = true; }); return (<points ref={pointsRef}><bufferGeometry><bufferAttribute attach="attributes-position" count={count} array={positions} itemSize={3} /></bufferGeometry><pointsMaterial size={0.8} color="#ff6600" transparent opacity={0.7} sizeAttenuation /></points>)
 }
 
 // ==========================================
@@ -329,36 +324,36 @@ function Astronaut({ position, name, controlsRef, nameColor = '#ffffff', scale =
   const group = useRef()
   const { scene, animations } = useGLTF(modelPath)
   const { actions, names } = useAnimations(animations, group)
-  
-  useEffect(() => { 
+
+  useEffect(() => {
     if (names.length > 0) {
       actions[names[0]]?.reset().fadeIn(0.5).play()
     }
   }, [actions, names])
-  
+
   const finalNameY = nameY !== undefined ? nameY : 2.5 * scale;
   const finalTextSize = textSize !== undefined ? textSize : 0.8 * scale;
 
   return (
-    <group position={position} onClick={(e) => { 
-        e.stopPropagation(); 
-        if(controlsRef.current) {
-          controlsRef.current.setLookAt(
-            position[0] + modelOffset[0], position[1] + finalNameY, position[2] + modelOffset[2] + 8, 
-            position[0] + modelOffset[0], position[1] + (finalNameY / 2), position[2] + modelOffset[2], 
-            true
-          )
-        }
-      }} 
-      onPointerOver={() => document.body.style.cursor='pointer'} 
-      onPointerOut={() => document.body.style.cursor='auto'}
+    <group position={position} onClick={(e) => {
+      e.stopPropagation();
+      if (controlsRef.current) {
+        controlsRef.current.setLookAt(
+          position[0] + modelOffset[0], position[1] + (finalNameY * 1), position[2] + modelOffset[2] + 4.5,
+          position[0] + modelOffset[0], position[1] + (finalNameY / 1.1), position[2] + modelOffset[2],
+          true
+        )
+      }
+    }}
+      onPointerOver={() => document.body.style.cursor = 'pointer'}
+      onPointerOut={() => document.body.style.cursor = 'auto'}
     >
       <group position={modelOffset} scale={[scale, scale, scale]}>
         <group ref={group}>
           <Clone object={scene} />
         </group>
       </group>
-      
+
       <Billboard position={[0, finalNameY, 0]}>
         <Text fontSize={finalTextSize} color={nameColor} anchorX="center" anchorY="middle" outlineWidth={0.03} outlineColor="#000000">{name}</Text>
       </Billboard>
@@ -368,98 +363,105 @@ function Astronaut({ position, name, controlsRef, nameColor = '#ffffff', scale =
 }
 function MemoryCoreHologram({ list, setFocusedTarget }) {
   const group = useRef()
-  const textureRef = useRef()
   const cylinderRef = useRef()
-  
+
   const { scene, animations } = useGLTF('/memory_core.glb')
   const { actions, names } = useAnimations(animations, group)
 
   useEffect(() => {
     if (names.length > 0) actions[names[0]]?.reset().play()
     scene.traverse((obj) => {
-      if (obj.name === 'Hologram_screen') obj.visible = false 
+      if (obj.name === 'Hologram_screen') obj.visible = false
     })
   }, [actions, names, scene])
 
+  // [DÜZELTME]: Liste her değiştiğinde texture'ı tamamen yeniliyoruz
   const canvasTexture = useMemo(() => {
     const canvas = document.createElement('canvas')
-    canvas.width = 1024
-    canvas.height = 2048
+
+    // Yüksekliği yine senin listene göre ayarlıyoruz
+    const calculatedHeight = Math.max(2048, (list.length * 60) + 200);
+
+    // [ADIM 1]: Genişliği 1024'ten 512'ye düşürerek tuvali daraltıyoruz
+    canvas.width = 512
+    canvas.height = calculatedHeight
     const ctx = canvas.getContext('2d')
-    ctx.font = 'Bold 40px Courier New'
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height)
+
+    // [ADIM 2]: Yazıların enine yayılmasını önlemek için font ayarı
+    ctx.font = 'Bold 30px Courier New' // Fontu biraz küçültmek daraltmaya yardımcı olur
     ctx.fillStyle = '#107c29'
     ctx.textAlign = 'center'
-    
+
     list.forEach((name, i) => {
-      ctx.fillText(name.toUpperCase(), 512, 100 + i * 60)
+      // Artık isimler yerine sistem/matris havası katan rastgele sayılar üretiyoruz
+      const randNum1 = Math.floor(1000 + Math.random() * 9000);
+      const randNum2 = Math.floor(1000 + Math.random() * 9000);
+      const randNum3 = Math.floor(1000 + Math.random() * 9000);
+      const fakeCode = `${randNum1}-${randNum2}-${randNum3}`;
+
+      // Yeni genişliğin yarısı (256) merkez noktamız oldu
+      ctx.fillText(fakeCode, 256, 100 + i * 60)
     })
-    
+
     const tex = new THREE.CanvasTexture(canvas)
     tex.wrapS = tex.wrapT = THREE.RepeatWrapping
-    textureRef.current = tex
+
+    // [ADIM 3]: Dokunun silindir üzerinde kaç kez tekrarlanacağını ayarla
+    // Yatayda (x) daha fazla tekrar yaparsan yazılar daha dar görünür. 
+    tex.repeat.set(6, 0.2);
+
+    tex.needsUpdate = true
     return tex
   }, [list])
 
   useFrame((state, delta) => {
-    if (textureRef.current) {
-      textureRef.current.offset.y -= delta * 0.15;
-      textureRef.current.needsUpdate = true;
+    // 4. Kayma efektini her karede uyguluyoruz
+    if (canvasTexture) {
+      canvasTexture.offset.y -= delta * 0.15;
     }
     if (cylinderRef.current) {
-      cylinderRef.current.rotation.y += delta * 0.2;
-      cylinderRef.current.position.y = Math.sin(state.clock.elapsedTime) * 0.2;
+      cylinderRef.current.rotation.y += delta * 0;
+      cylinderRef.current.position.y = Math.sin(state.clock.elapsedTime) * 0.02;
     }
   });
 
   return (
     <group position={[80, 20, 20]} scale={1}>
-      {/* İSTASYONUN ÜSTÜNDEKİ DEV YAZI */}
-      <Billboard
-        position={[0, 10, 0]} // İstasyonun üstündeki konumu
-        follow={true}
-      >
+      <Billboard position={[0, 5, 0]} follow={true}>
         <group>
-         {/* ANA BAŞLIK */}
-         <Text 
-           fontSize={1.5} 
-            color="#0a7a2e" 
-            anchorX="center" 
-            outlineWidth={0.05}
-            outlineColor="#000000"
-          >
-           ||| MEMORY CORE |||
+          {/* Arkadaki yeşil neon yansıma */}
+          <Text position={[0, 0, -0.1]} fontSize={1.1} color="#00ff44" anchorX="center" outlineWidth={0.08} outlineColor="#005511" fillOpacity={0.8}>
+            | BIG BANG |
           </Text>
-
-          {/* YENİ: TAKİPÇİ SAYACI */}
-          <Text 
-            position={[0, -1.5, 0]} // Ana yazının hemen altına hizaladım
-            fontSize={0.5} 
-            color="#24d04c" // Hacker yeşili, akıştaki isimlerle uyumlu
-            anchorX="center" 
-            outlineWidth={0.03}
-            outlineColor="#000000"
-          >
-            Universe Population: 37 / ∞
+          {/* Öndeki yoğun kırmızı ana yazı */}
+          <Text fontSize={1} color="#ff0000" anchorX="center" outlineWidth={0.04} outlineColor="#550000">
+            | BIG BANG |
+          </Text>
+          {/* Alttaki yeşil vurgulu Nüfus Bilgisi */}
+          <Text position={[0, -1.3, 0]} fontSize={0.6} color="#00ff44" anchorX="center" outlineWidth={0.03} outlineColor="#000000">
+            POPULATION: {list.length} / 1.000.000
           </Text>
         </group>
       </Billboard>
 
       <group ref={group}>
         <primitive object={scene} />
+        {/* BIG BANG ÇEKİRDEĞİNİ BURAYA KOYDUK */}
+        <BigBangModel position={[0, 0.5, 0]} scale={1.0} />
       </group>
 
-      <mesh 
-        ref={cylinderRef} 
+      <mesh
+        ref={cylinderRef}
         onClick={(e) => { e.stopPropagation(); setFocusedTarget('memory_core'); }}
-        onPointerOver={() => (document.body.style.cursor = 'pointer')}
-        onPointerOut={() => (document.body.style.cursor = 'auto')}
       >
-        <cylinderGeometry args={[4.2, 4.2, 13, 64, 1, true]} /> 
-        <meshBasicMaterial 
-          map={canvasTexture} 
-          transparent={true} 
-          opacity={0.9} 
-          side={THREE.DoubleSide} 
+        <cylinderGeometry args={[4.2, 4.2, 5, 64, 1, true]} />
+        <meshBasicMaterial
+          map={canvasTexture}
+          transparent={true}
+          opacity={10.9}
+          side={THREE.DoubleSide}
           blending={THREE.AdditiveBlending}
           depthWrite={false}
         />
@@ -467,17 +469,63 @@ function MemoryCoreHologram({ list, setFocusedTarget }) {
     </group>
   )
 }
+function Casper({ position, name, scale = 1, modelOffset = [0, 0, 0], nameY, textSize, controlsRef, nameColor = '#ffcc00', glow = null }) {
+  const group = useRef();
+  const { scene } = useGLTF('/casper.glb');
+
+  const finalNameY = nameY !== undefined ? nameY : 2.5 * scale;
+  const finalTextSize = textSize !== undefined ? textSize : 0.8 * scale;
+
+  const randomOffset = useMemo(() => Math.random() * Math.PI * 2, []);
+
+  useFrame((state) => {
+    if (!group.current) return;
+    const t = state.clock.getElapsedTime();
+
+    group.current.position.y = Math.sin(t + randomOffset) * 0.5;
+    group.current.rotation.z = Math.sin(t * 0.5 + randomOffset) * 0.1;
+    const s = 1 + Math.sin(t * 1.5 + randomOffset) * 0.05;
+    group.current.scale.set(s, s, s);
+  });
+
+  return (
+    <group position={position} onClick={(e) => {
+      e.stopPropagation();
+      if (controlsRef && controlsRef.current) {
+        controlsRef.current.setLookAt(
+          position[0] + modelOffset[0], position[1] + finalNameY, position[2] + modelOffset[2] + 4.5,
+          position[0] + modelOffset[0], position[1] + (finalNameY / 1.1), position[2] + modelOffset[2],
+          true
+        )
+      }
+    }}
+      onPointerOver={() => document.body.style.cursor = 'pointer'}
+      onPointerOut={() => document.body.style.cursor = 'auto'}
+    >
+      <group position={modelOffset} scale={[scale, scale, scale]}>
+        <group ref={group}>
+          <Clone object={scene} />
+        </group>
+      </group>
+
+      <Billboard position={[0, finalNameY, 0]}>
+        <Text fontSize={finalTextSize} color={nameColor} outlineWidth={0.03} outlineColor="#000000">{name}</Text>
+      </Billboard>
+      {glow && <pointLight distance={30} intensity={15} color={glow} position={[0, 4, 3]} />}
+    </group>
+  );
+}
 function GenesisHierarchy({ controlsRef, list }) {
-  const baseY = 3; 
+  const baseY = 3;
   const columns = [];
   for (let i = 0; i < 12; i++) {
     const angle = (i / 12) * Math.PI * 2; const x = Math.cos(angle) * 13.5; const z = Math.sin(angle) * 13.5;
-    columns.push( <mesh key={`col-${i}`} position={[x, baseY + 4, z]}><cylinderGeometry args={[0.8, 1, 8, 16]} /><meshStandardMaterial color="#ffffff" roughness={0.3} metalness={0.1} /></mesh> );
+    columns.push(<mesh key={`col-${i}`} position={[x, baseY + 4, z]}><cylinderGeometry args={[0.8, 1, 8, 16]} /><meshStandardMaterial color="#ffffff" roughness={0.3} metalness={0.1} /></mesh>);
   }
-// this is comment section,  i gotta make new videos about keyboard and monitor while im adding new followers to universe, idk if this is gonna be a good project but actually after this day i dont believe much, i only have 24 followes 10 of them are friend and 3-4 of them are from some bot comments, i have only 10 real followers. i hope i will grove fast otherwise im gonna give up cuz im tired.
+  // this is comment section,  i gotta make new videos about keyboard and monitor while im adding new followers to universe, idk if this is gonna be a good project but actually after this day i dont believe much, i only have 24 followes 10 of them are friend and 3-4 of them are from some bot comments, i have only 10 real followers. i hope i will grove fast otherwise im gonna give up cuz im tired.
   return (
     <group>
-      <spotLight position={[0, baseY + 30, 0]} intensity={250} distance={100} angle={Math.PI/6} penumbra={0.5} color="#ffffff" castShadow />
+      <spotLight position={[0, baseY + 30, 0]} intensity={250} distance={100} angle={Math.PI / 6} penumbra={0.5} color="#ffffff" castShadow />
       <mesh position={[0, baseY + 0.5, 0]}><cylinderGeometry args={[16, 18, 0.4, 64]} /><meshStandardMaterial color="#ffffff" roughness={0.1} metalness={0.2} /></mesh>
       <mesh position={[0, baseY + 1.01, 0]} rotation={[-Math.PI / 2, 0, 0]}><ringGeometry args={[15.5, 16.5, 64]} /><meshBasicMaterial color="#ffd700" side={THREE.DoubleSide} /></mesh>
       {columns}
@@ -487,173 +535,182 @@ function GenesisHierarchy({ controlsRef, list }) {
 
       {list.map((name, index) => {
         // İŞTE BURASI ÇOK ÖNEMLİ: mOffset'i en başta tanımlıyoruz!
-        let x, y, z, scale = 1, nameColor = '#ffffff', glow = null, modelPath = '/standartvatandas.glb', nameY = 3.0, textSize = undefined;
+        let x, y, z, scale = 1, nameColor = '#ffffff', glow = null, modelPath = '/casper.glb', nameY = 3.0, textSize = undefined;
         let mOffset = [0, 0, 0]; // Başlangıçta kimse kaymasın diyoruz.
 
-        if (index === 0) { 
-           // 1. KARAKTER (Kral)
-           x = 0; z = 0; y = baseY + 6; scale = 4.2; nameColor = '#ff007b'; glow = '#ffaa00'; modelPath = '/king.glb'; nameY = 9.4; textSize = 2.2;
-        } else if (index === 1) { 
-           // 2. KARAKTER (VIP Podyum)
-           x = -8; z = 0; y = baseY + 4; scale = 0.025; nameColor = '#ffffff'; nameY = 6.0; modelPath = '/swwmya.glb'; textSize = 1.5;
-        } else if (index === 2) { 
-           // 3. KARAKTER (VIP Podyum)
-           x = 8; z = 0; y = baseY + 3; scale = 0.20; nameColor = '#b46530'; nameY = 6.0; modelPath = '/elifertenx.glb'; textSize = 1.5;
-           mOffset = [0, 0, 0]; 
+        if (index === 0) {
+          // 1. KARAKTER (Kral)
+          x = 0; z = 0; y = baseY + 6; scale = 4.2; nameColor = '#ff007b'; glow = '#ffaa00'; modelPath = '/king.glb'; nameY = 9.4; textSize = 2.2;
+        } else if (index === 1) {
+          // 2. KARAKTER (VIP Podyum)
+          x = -8; z = 0; y = baseY + 4; scale = 0.025; nameColor = '#ffffff'; nameY = 6.0; modelPath = '/swwmya.glb'; textSize = 1.5;
+        } else if (index === 2) {
+          // 3. KARAKTER (VIP Podyum)
+          x = 8; z = 0; y = baseY + 3; scale = 0.20; nameColor = '#b46530'; nameY = 6.0; modelPath = '/elifertenx.glb'; textSize = 1.5;
+          mOffset = [0, 0, 0];
         } else {
-           // --- GERİ KALAN HERKES (RASTGELE DAĞILIM) ---
-           
-           if (index >= 3 && index < 22) {
-              nameColor = '#ffcc00'; 
-              modelPath = `/vip_${index + 1}.glb`; 
-              
-              // İŞTE SİHİR BURADA: Her VIP'ye özel boyut (scale) ve isim yüksekliği (nameY) atıyoruz!
-              if (index === 3) { 
-                 scale = 85.5;  // 4. Takipçi (vip_4.glb) boyutu
-                 nameY = 8.0;  // İsminin havada duracağı yükseklik
-                 textSize = 1;
-                 mOffset = [11, 4.0, 0]; 
-              } 
-              else if (index === 4) { 
-                 scale = 2.4; // 5. Takipçi (vip_5.glb) - (Eğer model çok büyükse böyle küçült)
-                 nameY = 7.8; 
-                 textSize = 1;
-              } 
-              else if (index === 5) { 
-                 scale = 5.2;  // 6. Takipçi (vip_6.glb)
-                 nameY = 4.7; 
-                 textSize = 1;
-              }
-              else if (index === 6) { 
-                 scale = 2.3;  // 7. Takipçi
-                 nameY = 7.5; 
-                 textSize = 1;
-              }
-              else if (index === 7) { 
-                 scale = 2.5;  // 8. Takipçi
-                 nameY = 7.0; 
-                 textSize = 1;
-              }
-              else if (index === 8) { 
-                 scale = 2.3;  // 9. Takipçi
-                 nameY = 6.5; 
-                 textSize = 1;
-              }
-              else if (index === 9) { 
-                 scale = 0.42;  // 10. Takipçi
-                 nameY = 7.6;
-                 textSize = 1;
-                 mOffset = [0, 0.5, 0];
-              }
-              else if (index === 10) { 
-                 scale = 2.2;  // 11. Takipçi
-                 nameY = 8.3; 
-                 textSize = 1;
-                 mOffset = [0, 0, -4];
-              }
-              else if (index === 11) { 
-                 scale = 3.7;  // 11. Takipçi
-                 nameY = 8.8; 
-                 textSize = 1;
-                 glow = '#1b0707';
-                 mOffset = [0, 0, 0];
-              }
-              else if (index === 12) { 
-                 scale = 2.2;  // 11. Takipçi
-                 nameY = 6.1; 
-                 textSize = 1;
-              }
-              else if (index === 13) { 
-                 scale = 3.2;  // 11. Takipçi
-                 nameY = 6.8; 
-                 textSize = 1;
-              }
-              else if (index === 14) { 
-                 scale = 4.1;  // 11. Takipçi
-                 nameY = 7.8; 
-                 textSize = 1;
-              }
-              else if (index === 15) { 
-                 scale = 2.2;  // 11. Takipçi
-                 nameY = 7.3; 
-                 textSize = 1;
-              }
-              else if (index === 16) { 
-                 scale = 5.7;  // 11. Takipçi
-                 nameY = 7.2; 
-                 textSize = 1;
-              }
-              else if (index === 17) { 
-                 scale = 4.2;  // 11. Takipçi
-                 nameY = 8.4; 
-                 textSize = 1;
-              }
-              else if (index === 18) { 
-                 scale = 200.7;  // 11. Takipçi
-                 nameY = 7.2; 
-                 textSize = 1;
-              }
-              else if (index === 19) { 
-                 scale = 2.7;  // 11. Takipçi
-                 nameY = 7.2; 
-                 textSize = 1;
-              }
-              else if (index === 20) { 
-                 scale = 2.7;  // 11. Takipçi
-                 nameY = 8.4; 
-                 textSize = 1;
-              }
-              else if (index === 21) { 
-                 scale = 2.7;  // 11. Takipçi
-                 nameY = 8.4; 
-                 textSize = 1;
-              }
-           } else {
-              // 12. KİŞİ VE SONRASI STANDART VATANDAŞ
-              nameColor = '#ffcc00'; 
-              scale = 3.6; // Standart vatandaşın boyutu
-              nameY = 25.8;
-              textSize = 1;
-              mOffset = [0, 20.5, 0];
-              modelPath = '/standartvatandas.glb'; 
-           }
+          // --- GERİ KALAN HERKES (RASTGELE DAĞILIM) ---
 
-           // Rastgele dağılım kodun (Burası senin efsane algoritman, hiç ellemedim)
-           do {
-             x = (Math.random() - 0.5) * 300; 
-             z = (Math.random() - 0.5) * 300;
-             
-             if (Math.abs(x) < 20 && Math.abs(z) < 35) {
-                x += (x > 0 ? 40 : -40);
-                z += (z > 0 ? 40 : -40);
-             }
-             
-             y = getElevation(x, z);
-           } while (y < waterLevel + 0.5); 
+          if (index >= 3 && index < 23) {
+            nameColor = '#ffcc00';
+            modelPath = `/vip_${index + 1}.glb`;
+
+            // İŞTE SİHİR BURADA: Her VIP'ye özel boyut (scale) ve isim yüksekliği (nameY) atıyoruz!
+            if (index === 3) {
+              scale = 85.5;  // 4. Takipçi (vip_4.glb) boyutu
+              nameY = 8.0;  // İsminin havada duracağı yükseklik
+              textSize = 1;
+              mOffset = [11, 4.0, 0];
+            }
+            else if (index === 4) {
+              scale = 2.4; // 5. Takipçi (vip_5.glb) - (Eğer model çok büyükse böyle küçült)
+              nameY = 7.8;
+              textSize = 1;
+            }
+            else if (index === 5) {
+              scale = 5.2;  // 6. Takipçi (vip_6.glb)
+              nameY = 4.7;
+              textSize = 1;
+            }
+            else if (index === 6) {
+              scale = 2.3;  // 7. Takipçi
+              nameY = 7.5;
+              textSize = 1;
+            }
+            else if (index === 7) {
+              scale = 2.5;  // 8. Takipçi
+              nameY = 7.0;
+              textSize = 1;
+            }
+            else if (index === 8) {
+              scale = 2.3;  // 9. Takipçi
+              nameY = 6.5;
+              textSize = 1;
+            }
+            else if (index === 9) {
+              scale = 0.42;  // 10. Takipçi
+              nameY = 7.6;
+              textSize = 1;
+              mOffset = [0, 0.5, 0];
+            }
+            else if (index === 10) {
+              scale = 2.2;  // 11. Takipçi
+              nameY = 8.3;
+              textSize = 1;
+              mOffset = [0, 0, -4];
+            }
+            else if (index === 11) {
+              scale = 3.7;  // 11. Takipçi
+              nameY = 8.8;
+              textSize = 1;
+              glow = '#1b0707';
+              mOffset = [0, 0, 0];
+            }
+            else if (index === 12) {
+              scale = 2.2;  // 11. Takipçi
+              nameY = 6.1;
+              textSize = 1;
+            }
+            else if (index === 13) {
+              scale = 3.2;  // 11. Takipçi
+              nameY = 6.8;
+              textSize = 1;
+            }
+            else if (index === 14) {
+              scale = 4.1;  // 11. Takipçi
+              nameY = 7.8;
+              textSize = 1;
+            }
+            else if (index === 15) {
+              scale = 2.2;  // 11. Takipçi
+              nameY = 7.3;
+              textSize = 1;
+            }
+            else if (index === 16) {
+              scale = 5.7;  // 11. Takipçi
+              nameY = 7.2;
+              textSize = 1;
+            }
+            else if (index === 17) {
+              scale = 4.2;  // 11. Takipçi
+              nameY = 8.4;
+              textSize = 1;
+            }
+            else if (index === 18) {
+              scale = 0.7;  // 11. Takipçi
+              nameY = 7.2;
+              textSize = 1;
+            }
+            else if (index === 19) {
+              scale = 2.7;  // 11. Takipçi
+              nameY = 7.2;
+              textSize = 1;
+            }
+            else if (index === 20) {
+              scale = 2.7;  // 11. Takipçi
+              nameY = 8.4;
+              textSize = 1;
+            }
+            else if (index === 21) {
+              scale = 2.7;  // 11. Takipçi
+              nameY = 8.4;
+              textSize = 1;
+            }
+            else if (index === 22) {
+              scale = 2.7;  // 11. Takipçi
+              nameY = 8.4;
+              textSize = 1;
+            }
+          } else {
+            // 12. KİŞİ VE SONRASI STANDART VATANDAŞ
+            nameColor = '#ffcc00';
+            scale = 0.9; // Standart vatandaşın boyutu
+            nameY = 27.8;
+            textSize = 1;
+            mOffset = [0, 20.5, 0];
+            modelPath = '/casper.glb';
+          }
+
+          // Rastgele dağılım kodun (Burası senin efsane algoritman, hiç ellemedim)
+          do {
+            x = (Math.random() - 0.5) * 500;
+            z = (Math.random() - 0.5) * 500;
+
+            if (Math.abs(x) < 20 && Math.abs(z) < 35) {
+              x += (x > 0 ? 40 : -40);
+              z += (z > 0 ? 40 : -40);
+            }
+
+            y = getElevation(x, z);
+          } while (y < waterLevel + 0.5);
         }
 
-        return <Astronaut key={index} position={[x, y, z]} name={name} controlsRef={controlsRef} nameColor={nameColor} scale={scale} glow={glow} modelPath={modelPath} nameY={nameY} textSize={textSize} modelOffset={mOffset} />
+        if (modelPath === '/casper.glb') {
+          return <Casper key={index} position={[x, y, z]} name={name} controlsRef={controlsRef} nameColor={nameColor} scale={scale} glow={glow} nameY={nameY} textSize={textSize} modelOffset={mOffset} />
+        } else {
+          return <Astronaut key={index} position={[x, y, z]} name={name} controlsRef={controlsRef} nameColor={nameColor} scale={scale} glow={glow} modelPath={modelPath} nameY={nameY} textSize={textSize} modelOffset={mOffset} />
+        }
       })}
     </group>
   )
 }
 
 function FollowerAvatars({ controlsRef, list, defaultColor }) {
-  const avatarPositions = useMemo(() => list.map((name) => { const x=(Math.random()-0.5)*200; const z=(Math.random()-0.5)*200; return { name, x, y: getElevation(x, z), z }; }), [list]);
-  
-  // DİĞER GEZEGENLER DE ESKİ DOSTUMUZ little_astronaut'a DÖNDÜ!
-  return <group>{avatarPositions.map((avatar, index) => <Astronaut key={index} position={[avatar.x, avatar.y, avatar.z]} name={avatar.name} controlsRef={controlsRef} nameColor={defaultColor} modelPath='/little_astronaut.glb' scale={1.0} />)}</group>
+  const avatarPositions = useMemo(() => list.map((name) => { const x = (Math.random() - 0.5) * 200; const z = (Math.random() - 0.5) * 200; return { name, x, y: getElevation(x, z), z }; }), [list]);
+
+  // DİĞER GEZEGENLER DE CASPER ANIMASYONLARINI KULLANACAK ŞEKİLDE GÜNCELLENDİ
+  return <group>{avatarPositions.map((avatar, index) => <Casper key={index} position={[avatar.x, avatar.y, avatar.z]} name={avatar.name} controlsRef={controlsRef} nameColor={defaultColor} scale={0.9} nameY={27.8} textSize={1} modelOffset={[0, 20.5, 0]} />)}</group>
 }
 
-try { 
+try {
   useGLTF.preload('/tree.glb');
   useGLTF.preload('/little_astronaut.glb');
   useGLTF.preload('/king.glb');
   useGLTF.preload('/founder.glb');
   useGLTF.preload('/tanri.glb');
-  useGLTF.preload('/swwmya.glb'); 
-  useGLTF.preload('/elifertenx.glb'); 
-  
+  useGLTF.preload('/swwmya.glb');
+  useGLTF.preload('/elifertenx.glb');
+
   // 4'ten 11'e kadar olan VIP'leri ve Standart Vatandaşı buraya işliyoruz
   useGLTF.preload('/vip_4.glb');
   useGLTF.preload('/vip_5.glb');
@@ -674,28 +731,197 @@ try {
   useGLTF.preload('/vip_20.glb');
   useGLTF.preload('/vip_21.glb');
   useGLTF.preload('/vip_22.glb');
-  useGLTF.preload('/standartvatandas.glb');
+  useGLTF.preload('/vip_23.glb');
+  useGLTF.preload('/casper.glb');
   useGLTF.preload('/space_station');
   useGLTF.preload('/memory_core.glb');
   useGLTF.preload('/animation_object.glb');
+  useGLTF.preload('/repaired_moon.glb');
+  useGLTF.preload('/bigbang.glb');
 } catch (e) { }
 // ==========================================
 // 3. BÖLÜM: KAMERA VE ANA UYGULAMA
 // ==========================================
 
+function HologramDatabase({ list, position, setFocusedTarget, isFocused }) {
+  const [listTexture, setListTexture] = useState(null)
+  const [frameTexture, setFrameTexture] = useState(null)
+  const offsetRef = useRef(0);
+
+  useEffect(() => {
+    // ===============================================
+    // 1. KATMAN: STATİK ÇERÇEVE VE BAŞLIK (MASKELEYİCİ)
+    // ===============================================
+    const frameCanvas = document.createElement('canvas')
+    const fCtx = frameCanvas.getContext('2d')
+    frameCanvas.width = 2048
+    frameCanvas.height = 3072 // 80x120 uçağına 1:1.5 ölçüsünde mükemmel oran cözünürlük
+
+    fCtx.clearRect(0, 0, 2048, 3072)
+
+    // Üst ve Alt Kısımlara Siyah Zemin (Arkasında kayan texti maskelemek için %100 opak)
+    fCtx.fillStyle = 'rgba(0, 4, 2, 1.0)'
+    fCtx.fillRect(0, 0, 2048, 450)     // Üst başlık bölgesi
+    fCtx.fillRect(0, 2900, 2048, 172)  // Alt ince kenar bölgesi
+
+    // Sağ-Sol kenarlara ufak taşmaları maskelemek için zemin
+    fCtx.fillRect(0, 0, 40, 3072)
+    fCtx.fillRect(2008, 0, 40, 3072)
+
+    // Hologramın tam arkaplanına "çok hafif şeffaf neon yeşili" tint
+    // Daha çok orta kısmı dolduracak şekilde boyuyoruz
+    fCtx.fillStyle = 'rgba(0, 255, 68, 0.14)'
+    fCtx.fillRect(40, 450, 1968, 2450)
+
+    // Neon Yeşil Çerçeve (Köpürebilir gölgeli)
+    fCtx.lineWidth = 15
+    fCtx.strokeStyle = '#00ff44'
+    fCtx.shadowColor = '#00ff44'
+    fCtx.shadowBlur = 10
+    fCtx.strokeRect(20, 20, 2008, 3032)
+
+    // Başlık ve Veri Yazıları (Sadece üst/statik bölgedeler)
+    fCtx.font = 'Bold 90px "Courier New", Courier, monospace'
+    fCtx.fillStyle = '#0a7a2e'
+    fCtx.textAlign = 'left'
+    fCtx.shadowBlur = 4
+
+    fCtx.fillText('=== UNIVERSAL DATABASE ===', 80, 160)
+    fCtx.fillText(`TOTAL ENTITIES: ${list.length}`, 80, 300)
+
+    // Başlıkla içerik arasına ayrım çizgisi
+    fCtx.lineWidth = 10
+    fCtx.beginPath();
+    fCtx.moveTo(20, 450);
+    fCtx.lineTo(2028, 450);
+    fCtx.stroke();
+
+    const fTex = new THREE.CanvasTexture(frameCanvas)
+    fTex.anisotropy = 16;
+    fTex.minFilter = THREE.LinearFilter;
+    fTex.magFilter = THREE.LinearFilter;
+    setFrameTexture(fTex);
+
+    // ===============================================
+    // 2. KATMAN: KAYAN İSİM LİSTESİ (SONSUZ DÖNGÜ)
+    // ===============================================
+    const listCanvas = document.createElement('canvas')
+    const lCtx = listCanvas.getContext('2d')
+
+    const columnCount = 2
+    const rowCount = Math.ceil(list.length / columnCount)
+    // Satır başına 100px; panel en az 3072 kadar uzun olmalı, listeye göre büyüyecek
+    const listHeight = Math.max(3072, rowCount * 120 + 300)
+
+    listCanvas.width = 2048
+    listCanvas.height = listHeight
+
+    // ListCanvas için sadece opak metin kalacak (Background temiz olmalı)
+    lCtx.clearRect(0, 0, listCanvas.width, listCanvas.height)
+
+    // İsim Fontları
+    lCtx.font = 'Bold 65px "Courier New", Courier, monospace'
+    lCtx.fillStyle = '#0a7a2e'
+    lCtx.shadowColor = '#00ff44'
+    lCtx.shadowBlur = 2
+
+    list.forEach((name, i) => {
+      const col = i % columnCount
+      const row = Math.floor(i / columnCount)
+      const x = 120 + col * (listCanvas.width / columnCount)
+      const y = 200 + row * 120
+      lCtx.fillText(`> ${name}`, x, y)
+    })
+
+    const lTex = new THREE.CanvasTexture(listCanvas)
+    lTex.anisotropy = 16;
+    lTex.minFilter = THREE.LinearFilter;
+    lTex.magFilter = THREE.LinearFilter;
+    // Sonsuz döngü ayarı:
+    lTex.wrapS = THREE.RepeatWrapping
+    lTex.wrapT = THREE.RepeatWrapping
+
+    const displayRatio = 3072 / listCanvas.height;
+    lTex.repeat.set(1, displayRatio);
+    setListTexture(lTex)
+
+  }, [list])
+
+  useFrame((state, delta) => {
+    if (listTexture) {
+      // Sürekli kendi kendine akan animasyon. Negatif arttıkça yukarı akar.
+      offsetRef.current -= delta * 0.04;
+      listTexture.offset.y = offsetRef.current;
+    }
+  })
+
+  useEffect(() => {
+    const handleScroll = (e) => {
+      if (isFocused) {
+        // e.deltaY pozitif ise aşağı kaydırıyoruz (dokudaki offset eksiye artmalı)
+        offsetRef.current -= Math.sign(e.deltaY) * 0.05;
+      }
+    };
+
+    window.addEventListener('wheel', handleScroll);
+    return () => window.removeEventListener('wheel', handleScroll);
+  }, [isFocused]);
+
+  return (
+    <Billboard
+      follow={true}
+      position={position}
+      onClick={(e) => { e.stopPropagation(); setFocusedTarget('database_hologram'); }}
+      onPointerOver={() => (document.body.style.cursor = 'pointer')}
+      onPointerOut={() => (document.body.style.cursor = 'auto')}
+    >
+      {/* 2. Katman: Sonsuz Kayan İsim Listesi (Hemen arkada: z:-0.5) */}
+      <mesh position={[0, 0, -0.5]}>
+        <planeGeometry args={[80, 120]} />
+        {listTexture && (
+          <meshBasicMaterial
+            map={listTexture}
+            transparent={true}
+            opacity={0.8}
+            side={THREE.DoubleSide}
+            blending={THREE.AdditiveBlending}
+            depthWrite={false}
+          />
+        )}
+      </mesh>
+
+      {/* 1. Katman: Statik Çerçeve ve Başlık Maskesi (Önde: z:0) */}
+      {/* Normal blending kullanarak opak bölgelerinin arkadaki isimleri örtmesini (maskelemesini) sağlıyoruz */}
+      <mesh position={[0, 0, 0]}>
+        <planeGeometry args={[80, 120]} />
+        {frameTexture && (
+          <meshBasicMaterial
+            map={frameTexture}
+            transparent={true}
+            side={THREE.DoubleSide}
+            depthWrite={false}
+          />
+        )}
+      </mesh>
+
+      <pointLight color="#00ff44" intensity={200} distance={150} position={[0, 0, 10]} />
+    </Billboard>
+  )
+}
+
 function PlayerController({ controlsRef, view, stepRef }) {
   const [movement, setMovement] = useState({ forward: false, backward: false, left: false, right: false })
   useEffect(() => {
-    const handleKeyDown = (e) => { if(e.code==='KeyW') setMovement(m=>({...m,forward:true})); if(e.code==='KeyS') setMovement(m=>({...m,backward:true})); if(e.code==='KeyA') setMovement(m=>({...m,left:true})); if(e.code==='KeyD') setMovement(m=>({...m,right:true})); }
-    const handleKeyUp = (e) => { if(e.code==='KeyW') setMovement(m=>({...m,forward:false})); if(e.code==='KeyS') setMovement(m=>({...m,backward:false})); if(e.code==='KeyA') setMovement(m=>({...m,left:false})); if(e.code==='KeyD') setMovement(m=>({...m,right:false})); }
+    const handleKeyDown = (e) => { if (e.code === 'KeyW') setMovement(m => ({ ...m, forward: true })); if (e.code === 'KeyS') setMovement(m => ({ ...m, backward: true })); if (e.code === 'KeyA') setMovement(m => ({ ...m, left: true })); if (e.code === 'KeyD') setMovement(m => ({ ...m, right: true })); }
+    const handleKeyUp = (e) => { if (e.code === 'KeyW') setMovement(m => ({ ...m, forward: false })); if (e.code === 'KeyS') setMovement(m => ({ ...m, backward: false })); if (e.code === 'KeyA') setMovement(m => ({ ...m, left: false })); if (e.code === 'KeyD') setMovement(m => ({ ...m, right: false })); }
     window.addEventListener('keydown', handleKeyDown); window.addEventListener('keyup', handleKeyUp);
     return () => { window.removeEventListener('keydown', handleKeyDown); window.removeEventListener('keyup', handleKeyUp); }
   }, [])
 
   useEffect(() => {
     const isMoving = movement.forward || movement.backward || movement.left || movement.right;
-    if (view.startsWith('surface') && isMoving) { if(stepRef.current?.paused) stepRef.current.play(); } 
-    else { if(!stepRef.current?.paused) stepRef.current.pause(); }
+    if (view.startsWith('surface') && isMoving) { if (stepRef.current?.paused) stepRef.current.play(); }
+    else { if (!stepRef.current?.paused) stepRef.current.pause(); }
   }, [movement, view, stepRef])
 
   useFrame((state, delta) => {
@@ -708,7 +934,7 @@ function PlayerController({ controlsRef, view, stepRef }) {
       let newX = Math.max(-200, Math.min(200, state.camera.position.x + moveVector.x));
       let newZ = Math.max(-200, Math.min(200, state.camera.position.z + moveVector.z));
       const newY = getElevation(newX, newZ) + 3;
-      controlsRef.current.setLookAt(newX, newY, newZ, newX+forward.x, newY+forward.y, newZ+forward.z, false);
+      controlsRef.current.setLookAt(newX, newY, newZ, newX + forward.x, newY + forward.y, newZ + forward.z, false);
     }
   })
   return null
@@ -739,16 +965,16 @@ function SpaceStationModel({ position, scale, setFocusedTarget }) {
   return (
     <group position={position}>
       {/* GÜNEŞ YANSIMASI: Işığı Güneş'in olduğu yöne (merkeze doğru) konumlandırıyoruz */}
-      <pointLight 
+      <pointLight
         intensity={10000} // Parlaklık şiddeti
         distance={200}   // Işığın ulaşacağı mesafe
         color="#ffcc00"  // Güneş'in altın sarısı rengi
         position={[-90, -20, -35]} // İstasyon [90, 20, 35] olduğu için tam tersi yön Güneş'i gösterir
       />
 
-      <primitive 
-        object={scene} 
-        scale={scale} 
+      <primitive
+        object={scene}
+        scale={scale}
         onClick={(e) => { e.stopPropagation(); setFocusedTarget('space_station'); }}
         onPointerOver={() => (document.body.style.cursor = 'pointer')}
         onPointerOut={() => (document.body.style.cursor = 'auto')}
@@ -758,7 +984,7 @@ function SpaceStationModel({ position, scale, setFocusedTarget }) {
 }
 function AnimatedStructure({ position, scale, setFocusedTarget, focusedTarget, onEnterBlackHole }) {
   const group = useRef()
-  const { scene, animations } = useGLTF('/animation_object.glb') 
+  const { scene, animations } = useGLTF('/animation_object.glb')
   const { actions, names } = useAnimations(animations, group)
 
   useEffect(() => {
@@ -766,15 +992,15 @@ function AnimatedStructure({ position, scale, setFocusedTarget, focusedTarget, o
   }, [actions, names])
 
   return (
-    <group 
-      ref={group} 
-      position={position} 
+    <group
+      ref={group}
+      position={position}
       scale={scale}
-      onClick={(e) => { 
-        e.stopPropagation(); 
+      onClick={(e) => {
+        e.stopPropagation();
         // Eğer zaten bu yapıya odaklıysak girişi başlat, değilsek odaklan
         if (focusedTarget === 'animated_structure') {
-          onEnterBlackHole(); 
+          onEnterBlackHole();
         } else {
           setFocusedTarget('animated_structure');
         }
@@ -787,9 +1013,9 @@ function AnimatedStructure({ position, scale, setFocusedTarget, focusedTarget, o
       {/* Sadece odaklandığımızda görünen ve girişi belirten yazı */}
       {focusedTarget === 'animated_structure' && (
         <Billboard position={[0, 45, 0]}>
-          <Text 
-            fontSize={8} 
-            color="#ff0000" 
+          <Text
+            fontSize={8}
+            color="#ff0000"
             font="/Orbitron-Bold.ttf"
             outlineWidth={0.5}
             outlineColor="#000000"
@@ -801,45 +1027,184 @@ function AnimatedStructure({ position, scale, setFocusedTarget, focusedTarget, o
     </group>
   )
 }
+
+export function RepairedMoon({ setFocusedTarget, focusedTarget, moonPositionRef }) {
+  const { scene } = useGLTF('/repaired_moon.glb')
+  const moonRef = useRef()
+  const customTimeRef = useRef(0)
+
+  useFrame((state, delta) => {
+    // Sadece Güneş odaklıyken zamanı ilerlet, yoksa dondur
+    if (focusedTarget !== 'sun' && focusedTarget !== null) return;
+
+    customTimeRef.current += delta;
+    const t = customTimeRef.current;
+
+    const distance = 82;
+    const speed = -0.08;
+
+    const x = Math.cos(t * speed) * distance
+    const z = Math.sin(t * speed) * distance
+
+    if (moonRef.current) {
+      moonRef.current.position.set(x, 5, z)
+      moonRef.current.rotation.y += 0.003
+
+      // KRİTİK DÜZELTME: Anlık pozisyonu App.js'teki Ref'e yazıyoruz
+      if (moonPositionRef && moonPositionRef.current) {
+        moonPositionRef.current.set(x, 5, z);
+      }
+    }
+  })
+
+  // Altın parçaların parlama ayarı
+  scene.traverse((child) => {
+    if (child.isMesh && (child.name.includes("repair") || child.name.includes("metal"))) {
+      child.material.emissive = new THREE.Color("#ffaa00");
+      child.material.emissiveIntensity = 30;
+    }
+  });
+
+  return (
+    <primitive
+      ref={moonRef}
+      object={scene}
+      scale={5}
+      onClick={(e) => {
+        e.stopPropagation();
+        setFocusedTarget('repaired_moon');
+      }}
+      onPointerOver={() => (document.body.style.cursor = 'pointer')}
+      onPointerOut={() => (document.body.style.cursor = 'auto')}
+    />
+  )
+}
+function BigBangModel({ position = [0, 0, 0], scale = 1 }) {
+  const group = useRef()
+  const { scene, animations } = useGLTF('/bigbang.glb')
+  const { actions, names } = useAnimations(animations, group)
+  const materialsRef = useRef([])
+
+  useEffect(() => {
+    // Tüm animasyon kanallarını aynı anda oynatıyoruz
+    if (names && names.length > 0) {
+      names.forEach(name => actions[name]?.reset().play());
+    }
+
+    materialsRef.current = []
+    let index = 0;
+    scene.traverse((child) => {
+      if (child.isMesh || child.isPoints) {
+        // Renkleri korurken maksimum parlamanın önüne geçelim
+        const colors = ["#00ffff", "#ff00ff", "#aa00ff", "#ff0044"];
+        const color = new THREE.Color(colors[index % colors.length]);
+
+        const mat = new THREE.MeshBasicMaterial({
+          color: color,
+          transparent: true,
+          opacity: 0.0000005,
+          blending: THREE.NormalBlending,
+          depthWrite: false,
+          depthTest: true,
+          side: THREE.DoubleSide
+        });
+
+        child.material = mat;
+        materialsRef.current.push(mat)
+        index++;
+      }
+    });
+  }, [actions, names, scene])
+
+  // Sabit ve temiz bir nefes alma animasyonu
+  useFrame(({ clock }) => {
+    const t = clock.getElapsedTime();
+
+    if (group.current) {
+      // Çekirdeğin çok çok hafif şişip inmesi
+      const pulseScale = scale + (Math.sin(t * 2) * (0.05 * scale));
+      group.current.scale.set(pulseScale, pulseScale, pulseScale);
+
+      // En güvenli döndürme yöntemi, eksenleri bozmaz
+      group.current.rotation.y += 0.005;
+      group.current.rotation.z += 0.002;
+    }
+
+    // Daha katı ve görünür olması için opacity değerleri belirgin şekilde artırıldı
+    materialsRef.current.forEach((mat, i) => {
+      const flicker = Math.abs(Math.sin(t * 1.5 + i)) * 0.05;
+      mat.opacity = 0.2 + flicker;
+    });
+  })
+
+  return (
+    <group position={position} scale={scale}>
+      <group ref={group}>
+        <pointLight intensity={300} distance={100} color="#ff00ff" position={[0, 0, 0]} />
+        <primitive object={scene} />
+      </group>
+    </group>
+  )
+}
+
 function App() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [view, setView] = useState('galaxy') 
+  const [view, setView] = useState('galaxy')
   const [focusedTarget, setFocusedTarget] = useState('sun')
   const [transitionVideo, setTransitionVideo] = useState('/transition.mp4')
   const cameraControlsRef = useRef()
   const videoRef = useRef(null)
-  
-  const windRef = useRef(null); 
-  const fireRef = useRef(null); 
+
+  const moonPositionRef = useRef(new THREE.Vector3(82, 5, 0));
+
+  const windRef = useRef(null);
+  const fireRef = useRef(null);
   const stepRef = useRef(null);
-  const birdsRef = useRef(null); 
+  const birdsRef = useRef(null);
 
   // KAMERA ODAKLANMA SİSTEMİ
   useEffect(() => {
     if (!cameraControlsRef.current) return;
 
+    // Tekerlek olayını tamamen kapatmak yerine, doğrudan Dolly (Zoom) hızını sıfıra indiriyoruz.
+    // Böylece tekerlek kaydırıldığında başka React Three Fiber bileşenleri "mouse.wheel=0" hatasına düşmüyor.
+    if (focusedTarget === 'database_hologram') {
+      cameraControlsRef.current.dollySpeed = 0; // Zoom kilidi - Kapalı
+    } else {
+      cameraControlsRef.current.dollySpeed = 1; // Kamera Zoom Yeteneği - Açık
+    }
+
     if (focusedTarget === 'sun') {
-       cameraControlsRef.current.setLookAt(0, 40, 80, 0, 0, 0, true);
-    } 
+      cameraControlsRef.current.setLookAt(0, 40, 80, 0, 0, 0, true);
+    }
+    else if (focusedTarget === 'repaired_moon') {
+      const { x, y, z } = moonPositionRef.current;
+      cameraControlsRef.current.setLookAt(x + 25, y + 20, z + 25, x, y, z, true);
+    }
     else if (focusedTarget === 'memory_core') {
-       cameraControlsRef.current.setLookAt(100, 40, 50, 80, 20, 20, true);
+      cameraControlsRef.current.setLookAt(100, 40, 50, 80, 20, 20, true);
     }
     else if (focusedTarget === 'space_station') {
-       cameraControlsRef.current.setLookAt(85, 40, 60, 75, 10, 20, true);
+      cameraControlsRef.current.setLookAt(85, 40, 60, 75, 10, 20, true);
     }
     else if (focusedTarget === 'animated_structure') {
-       // Uzaklaştırdığımız konuma [-250, 10, -200] göre odaklanma
-       cameraControlsRef.current.setLookAt(-180, 50, -130, -250, 10, -200, true);
+      cameraControlsRef.current.setLookAt(-180, 50, -130, -250, 10, -200, true);
+    }
+    else if (focusedTarget === 'database_hologram') {
+      cameraControlsRef.current.setLookAt(180, 20, 50, 180, 20, -50, true);
+    }
+    else if (focusedTarget === 'genesis') {
+      cameraControlsRef.current.setLookAt(110, 40, 110, 82, 5, 82, true);
     }
   }, [focusedTarget]);
 
-  // SES SİSTEMİ (Değişmedi)
+  // SES SİSTEMİ
   useEffect(() => {
     if (view === 'surface_genesis') {
       if (fireRef.current) fireRef.current.pause();
-      if (windRef.current) windRef.current.pause(); 
+      if (windRef.current) windRef.current.pause();
       if (birdsRef.current) { birdsRef.current.volume = 0.5; birdsRef.current.play(); }
-      if (stepRef.current) stepRef.current.src = "/grass_step.mp3"; 
+      if (stepRef.current) stepRef.current.src = "/grass_step.mp3";
     } else if (view === 'surface_ice') {
       if (fireRef.current) fireRef.current.pause();
       if (birdsRef.current) birdsRef.current.pause();
@@ -859,12 +1224,12 @@ function App() {
   }, [view])
 
   const handleEnterPlanet = (planetType) => {
-    let vidSrc = '/transition.mp4'; 
+    let vidSrc = '/transition.mp4';
     if (planetType === 'lava') vidSrc = '/lavatransition.mp4';
     if (planetType === 'genesis') vidSrc = '/paradisetransition1.mp4';
     setTransitionVideo(vidSrc);
     setTimeout(() => { if (videoRef.current) { videoRef.current.style.opacity = '1'; videoRef.current.currentTime = 0; videoRef.current.play(); } }, 50);
-    setTimeout(() => { setView(`surface_${planetType}`) }, 2500) 
+    setTimeout(() => { setView(`surface_${planetType}`) }, 2500)
     setTimeout(() => { if (videoRef.current) { videoRef.current.style.opacity = '0'; setTimeout(() => videoRef.current.pause(), 500); } }, 3000)
   }
 
@@ -876,85 +1241,104 @@ function App() {
   });
 
   return (
-    <div style={{ width: '100vw', height: '100vh', position: 'relative' }}>
+    <div style={{ width: '100vw', height: '100vh', position: 'relative', background: '#000' }}>
+
+      {/* 🏠 EVRENE DÖNÜŞ BUTONU - Sadece gezegen yüzeyindeyken çıkar */}
+      {view !== 'galaxy' && (
+        <div
+          onClick={() => setView('galaxy')}
+          style={{
+            position: 'absolute', top: '25px', left: '25px', zIndex: 110,
+            cursor: 'pointer', background: 'rgba(255, 255, 255, 0.1)',
+            padding: '7px 10px', borderRadius: '5px', border: '1px solid rgba(255, 255, 255, 0.4)',
+            color: '#fff', fontFamily: '"Courier New", Courier, monospace',
+            backdropFilter: 'blur(10px)', transition: 'all 0.3s',
+            textTransform: 'uppercase', letterSpacing: '2px', fontSize: '12px'
+          }}
+        >
+          [ Return to Galaxy ]
+        </div>
+      )}
+
       {view === 'galaxy' && (
         <>
-          {/* 🍔 HAMBURGER BUTONU */}
-          <div 
-            onClick={() => setIsMenuOpen(!isMenuOpen)}
-            style={{
-              position: 'absolute', top: '25px', left: '25px', zIndex: 100,
-              cursor: 'pointer', background: 'rgba(0, 5, 10, 0.9)', padding: '12px',
-              borderRadius: '5px', border: '1px solid #555', display: 'flex', flexDirection: 'column', gap: '5px'
-            }}
-          >
+          <div onClick={() => setIsMenuOpen(!isMenuOpen)} style={{ position: 'absolute', top: '25px', left: '25px', zIndex: 100, cursor: 'pointer', background: 'rgba(0, 5, 10, 0.9)', padding: '12px', borderRadius: '5px', border: '1px solid #555', display: 'flex', flexDirection: 'column', gap: '5px' }}>
             <div style={{ width: '25px', height: '3px', background: '#fff' }}></div>
             <div style={{ width: '25px', height: '3px', background: '#fff' }}></div>
             <div style={{ width: '25px', height: '3px', background: '#fff' }}></div>
           </div>
 
-          {/* 📱 AÇILIR NAVİGASYON PANELİ */}
-          <div style={{ 
-            position: 'absolute', top: '20px', 
-            left: isMenuOpen ? '20px' : '-300px', // Animasyonlu kayma efekti
-            zIndex: 10, background: 'rgba(0, 5, 10, 0.9)', border: '1px solid #555', 
-            padding: '20px', borderRadius: '8px', backdropFilter: 'blur(10px)', 
-            width: '250px', transition: 'all 0.5s ease-in-out', 
-            opacity: isMenuOpen ? 1 : 0 
-          }}>
+          <div style={{ position: 'absolute', top: '20px', left: isMenuOpen ? '20px' : '-300px', zIndex: 10, background: 'rgba(0, 5, 10, 0.9)', border: '1px solid #555', padding: '20px', borderRadius: '8px', backdropFilter: 'blur(10px)', width: '250px', transition: 'all 0.5s ease-in-out', opacity: isMenuOpen ? 1 : 0 }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', borderBottom: '1px solid #555', paddingBottom: '10px' }}>
               <h2 style={{ color: '#ffffff', margin: 0, fontSize: '16px' }}>/// NAVIGATOR</h2>
               <span onClick={() => setIsMenuOpen(false)} style={{ color: '#fff', cursor: 'pointer', fontSize: '22px' }}>×</span>
             </div>
-
             <div style={menuItemStyle('sun', '#ffaa00')} onClick={() => { setFocusedTarget('sun'); setIsMenuOpen(false); }}>[0] Central Sun</div>
             <div style={menuItemStyle('genesis', '#ffd700')} onClick={() => { setFocusedTarget('genesis'); setIsMenuOpen(false); }}>[1] Elysium Prime</div>
             <div style={menuItemStyle('lava', '#ff3300')} onClick={() => { setFocusedTarget('lava'); setIsMenuOpen(false); }}>[2] Ignis Prime</div>
             <div style={menuItemStyle('ice', '#00ffff')} onClick={() => { setFocusedTarget('ice'); setIsMenuOpen(false); }}>[3] Frozen</div>
             <div style={menuItemStyle('memory_core', '#13630c')} onClick={() => { setFocusedTarget('memory_core'); setIsMenuOpen(false); }}>[4] Memory Core</div>
-            <div style={menuItemStyle('space_station', '#888888')} onClick={() => { setFocusedTarget('space_station'); setIsMenuOpen(false); }}>[5] Space Station</div>
-            <div style={menuItemStyle('animated_structure', '#ff00ff')} onClick={() => { setFocusedTarget('animated_structure'); setIsMenuOpen(false); }}>[6] Unknown Signal</div>
+            <div style={menuItemStyle('database_hologram', '#0a7a2e')} onClick={() => { setFocusedTarget('database_hologram'); setIsMenuOpen(false); }}>[5] Univ. Database</div>
+            <div style={menuItemStyle('space_station', '#888888')} onClick={() => { setFocusedTarget('space_station'); setIsMenuOpen(false); }}>[6] Space Station</div>
+            <div style={menuItemStyle('bigbang', '#ff00ff')} onClick={() => { setFocusedTarget('bigbang'); setIsMenuOpen(false); }}>[7] The Big Bang</div>
+            <div style={menuItemStyle('repaired_moon', '#ffffff')} onClick={() => { setFocusedTarget('repaired_moon'); setIsMenuOpen(false); }}>[8] Repaired Moon</div>
           </div>
         </>
       )}
-      
-      <audio ref={windRef} src="/wind.mp3" loop /> <audio ref={fireRef} src="/fire.mp3" loop /> 
+
+      <audio ref={windRef} src="/wind.mp3" loop /> <audio ref={fireRef} src="/fire.mp3" loop />
       <audio ref={birdsRef} src="/birds.mp3" loop /> <audio ref={stepRef} src="/grass_step.mp3" loop />
       <video ref={videoRef} src={transitionVideo} style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', objectFit: 'cover', zIndex: 100, opacity: 0, pointerEvents: 'none', transition: 'opacity 0.5s ease-out' }} />
 
       <Canvas>
-        <CameraControls ref={cameraControlsRef} maxPolarAngle={Math.PI / 2 - 0.05} minDistance={2} maxDistance={300} />
-        <SceneController view={view} controlsRef={cameraControlsRef} />
-        <PlayerController controlsRef={cameraControlsRef} view={view} stepRef={stepRef} />
-        
-        {view === 'galaxy' && (
-          <>
-            <ambientLight intensity={1.4} color="#ffffff" /> 
-            <SunSystem focusedTarget={focusedTarget} setFocusedTarget={setFocusedTarget} controlsRef={cameraControlsRef} />
-            <SolarSystemOrbits onEnter={handleEnterPlanet} focusedTarget={focusedTarget} setFocusedTarget={setFocusedTarget} controlsRef={cameraControlsRef} />
-            <MemoryCoreHologram list={genesisFollowers} setFocusedTarget={setFocusedTarget} cameraControlsRef={cameraControlsRef} />
-            <SpaceStationModel position={[90, 20, 35]} scale={0.2} setFocusedTarget={setFocusedTarget} />
+        <Suspense fallback={null}>
+          <CameraControls ref={cameraControlsRef} maxPolarAngle={Math.PI / 2 - 0.05} minDistance={2} maxDistance={500} />
+          <SceneController view={view} controlsRef={cameraControlsRef} />
+          <PlayerController controlsRef={cameraControlsRef} view={view} stepRef={stepRef} />
 
-            <AnimatedStructure 
-              position={[-250, 10, -200]} 
-              scale={0.07} 
-              setFocusedTarget={setFocusedTarget} 
-            />
-            
-            <Stars radius={250} depth={100} count={7000} factor={6} fade speed={1} />
-          </>
-        )}
+          {view === 'galaxy' && (
+            <>
+              <ambientLight intensity={1.4} color="#ffffff" />
+              <SunSystem focusedTarget={focusedTarget} setFocusedTarget={setFocusedTarget} controlsRef={cameraControlsRef} />
+              <SolarSystemOrbits onEnter={handleEnterPlanet} focusedTarget={focusedTarget} setFocusedTarget={setFocusedTarget} controlsRef={cameraControlsRef} />
+              <MemoryCoreHologram list={genesisFollowers} setFocusedTarget={setFocusedTarget} cameraControlsRef={cameraControlsRef} />
+              <SpaceStationModel position={[90, 20, 35]} scale={0.2} setFocusedTarget={setFocusedTarget} />
+              <RepairedMoon focusedTarget={focusedTarget} setFocusedTarget={setFocusedTarget} moonPositionRef={moonPositionRef} />
 
-        {view === 'surface_genesis' && (
-          <>
-            <ambientLight intensity={0.8} color="#ffffff" /> 
-            <directionalLight position={[-50, 80, -20]} intensity={1.5} color="#ffffee" />
-            <ParadiseTerrain /> <ParadiseWater /> <Fireflies />
-            <Cloud position={[0, 100, 0]} opacity={0.5} speed={0.4} width={200} depth={200} segments={40} color="#ffffff" />
-            <GenesisHierarchy controlsRef={cameraControlsRef} list={genesisFollowers} /> 
-            <GlowingTrees /> <FloatingIsland />
-          </>
-        )}
+              {/* === DEV HOLOGRAM DATABASE === */}
+              {/* Gezegenlerin biraz daha sağında ve arkasında durması için x: 180, z: -50 verdik */}
+              <HologramDatabase list={genesisFollowers} position={[180, 20, -50]} setFocusedTarget={setFocusedTarget} isFocused={focusedTarget === 'database_hologram'} />
+
+              <AnimatedStructure position={[-250, 10, -200]} scale={0.07} setFocusedTarget={setFocusedTarget} />
+              <Stars radius={250} depth={100} count={7000} factor={6} fade speed={1} />
+            </>
+          )}
+
+          {view === 'surface_genesis' && (
+            <>
+              <ambientLight intensity={0.8} color="#ffffff" />
+              <directionalLight position={[-50, 80, -20]} intensity={1.5} color="#ffffee" />
+              <ParadiseTerrain /> <ParadiseWater /> <Fireflies />
+              <Cloud position={[0, 100, 0]} opacity={0.5} speed={0.4} width={200} depth={200} segments={40} color="#ffffff" />
+              <GenesisHierarchy controlsRef={cameraControlsRef} list={genesisFollowers} />
+              <GlowingTrees /> <FloatingIsland />
+            </>
+          )}
+
+          {view === 'surface_ice' && (
+            <>
+              <ambientLight intensity={0.5} color="#ffffff" />
+              <IceTerrain /> <SnowStorm />
+            </>
+          )}
+
+          {view === 'surface_lava' && (
+            <>
+              <ambientLight intensity={0.4} color="#ff3300" />
+              <LavaTerrain /> <AshStorm />
+            </>
+          )}
+        </Suspense>
       </Canvas>
     </div>
   )
