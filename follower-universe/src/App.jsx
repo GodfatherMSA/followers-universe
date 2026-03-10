@@ -428,7 +428,7 @@ function MemoryCoreHologram({ list, setFocusedTarget }) {
   });
 
   return (
-    <group position={[80, 20, 20]} scale={1}>
+    <group position={[80, 20, 20]} scale={2}>
       <Billboard position={[0, 5, 0]} follow={true}>
         <group>
           {/* Arkadaki yeşil neon yansıma */}
@@ -515,13 +515,108 @@ function Casper({ position, name, scale = 1, modelOffset = [0, 0, 0], nameY, tex
     </group>
   );
 }
-function GenesisHierarchy({ controlsRef, list }) {
+function GenesisHierarchy({ controlsRef, list, searchQuery }) {
   const baseY = 3;
-  const columns = [];
-  for (let i = 0; i < 12; i++) {
-    const angle = (i / 12) * Math.PI * 2; const x = Math.cos(angle) * 13.5; const z = Math.sin(angle) * 13.5;
-    columns.push(<mesh key={`col-${i}`} position={[x, baseY + 4, z]}><cylinderGeometry args={[0.8, 1, 8, 16]} /><meshStandardMaterial color="#ffffff" roughness={0.3} metalness={0.1} /></mesh>);
+  const columns = useMemo(() => {
+    const cols = [];
+    for (let i = 0; i < 12; i++) {
+      const angle = (i / 12) * Math.PI * 2; const x = Math.cos(angle) * 13.5; const z = Math.sin(angle) * 13.5;
+      cols.push(<mesh key={`col-${i}`} position={[x, baseY + 4, z]}><cylinderGeometry args={[0.8, 1, 8, 16]} /><meshStandardMaterial color="#ffffff" roughness={0.3} metalness={0.1} /></mesh>);
+    }
+    return cols;
+  }, [baseY]);
+
+  // Animasyonların kaybolmaması için (useGLTF clone componentlerinin yeniden mount olmaması için)
+  // useMemo yerine başlangıçta referans olarak kaydedilen veya id bazlı statik veriler tutmalıyız:
+  const characterDataRef = useRef(null);
+
+  if (!characterDataRef.current || characterDataRef.current.length !== list.length) {
+    characterDataRef.current = list.map((name, index) => {
+      let x, y, z, scale = 1, nameColor = '#ffffff', glow = null, modelPath = '/casper.glb', nameY = 3.0, textSize = undefined;
+      let mOffset = [0, 0, 0];
+
+      if (index === 0) {
+        x = 0; z = 0; y = baseY + 6; scale = 4.2; nameColor = '#ff007b'; glow = '#ffaa00'; modelPath = '/king.glb'; nameY = 9.4; textSize = 2.2;
+      } else if (index === 1) {
+        x = -8; z = 0; y = baseY + 4; scale = 0.025; nameColor = '#ffffff'; nameY = 6.0; modelPath = '/swwmya.glb'; textSize = 1.5;
+      } else if (index === 2) {
+        x = 8; z = 0; y = baseY + 3; scale = 0.20; nameColor = '#b46530'; nameY = 6.0; modelPath = '/elifertenx.glb'; textSize = 1.5;
+        mOffset = [0, 0, 0];
+      } else {
+        if (index >= 3 && index < 24) {
+          nameColor = '#ffcc00';
+          modelPath = `/vip_${index + 1}.glb`;
+
+          if (index === 3) { scale = 85.5; nameY = 8.0; textSize = 1; mOffset = [11, 4.0, 0]; }
+          else if (index === 4) { scale = 2.4; nameY = 7.8; textSize = 1; }
+          else if (index === 5) { scale = 5.2; nameY = 4.7; textSize = 1; }
+          else if (index === 6) { scale = 2.3; nameY = 7.5; textSize = 1; }
+          else if (index === 7) { scale = 2.5; nameY = 7.0; textSize = 1; }
+          else if (index === 8) { scale = 2.3; nameY = 6.5; textSize = 1; }
+          else if (index === 9) { scale = 0.42; nameY = 7.6; textSize = 1; mOffset = [0, 0.5, 0]; }
+          else if (index === 10) { scale = 2.2; nameY = 8.3; textSize = 1; mOffset = [0, 0, -4]; }
+          else if (index === 11) { scale = 3.7; nameY = 8.8; textSize = 1; glow = '#1b0707'; mOffset = [0, 0, 0]; }
+          else if (index === 12) { scale = 2.2; nameY = 6.1; textSize = 1; }
+          else if (index === 13) { scale = 4.2; nameY = 8.8; textSize = 1; }
+          else if (index === 14) { scale = 4.1; nameY = 7.8; textSize = 1; }
+          else if (index === 15) { scale = 2.2; nameY = 7.3; textSize = 1; }
+          else if (index === 16) { scale = 5.7; nameY = 7.2; textSize = 1; }
+          else if (index === 17) { scale = 4.2; nameY = 8.4; textSize = 1; }
+          else if (index === 18) { scale = 0.7; nameY = 8.2; textSize = 1; }
+          else if (index === 19) { scale = 2.7; nameY = 7.2; textSize = 1; }
+          else if (index === 20) { scale = 2.7; nameY = 8.4; textSize = 1; }
+          else if (index === 21) { scale = 2.7; nameY = 8.4; textSize = 1; }
+          else if (index === 22) { scale = 2.7; nameY = 8.4; textSize = 1; }
+          else if (index === 23) { scale = 0.6; nameY = 11.0; textSize = 1; }
+        } else {
+          nameColor = '#ffcc00'; scale = 0.9; nameY = 27.8; textSize = 1; mOffset = [0, 20.5, 0]; modelPath = '/casper.glb';
+        }
+
+        Math.seedrandom ? Math.seedrandom(name) : ''; // avoid random repositioning on hot reload if possible
+
+        // Rastgele dağılım
+        do {
+          x = (Math.random() - 0.5) * 500;
+          z = (Math.random() - 0.5) * 500;
+          if (Math.abs(x) < 20 && Math.abs(z) < 35) { x += (x > 0 ? 40 : -40); z += (z > 0 ? 40 : -40); }
+          y = getElevation(x, z);
+        } while (y < waterLevel + 0.5);
+      }
+
+      return { name, index, x, y, z, scale, nameColor, glow, modelPath, nameY, textSize, mOffset };
+    });
   }
+
+  const characterData = characterDataRef.current;
+
+  // Render edilmiş komponentleri (React Element) useMemo içinde tutarsak
+  // App ana bileşeni re-render atsa bile bu componentler tamamen aynı referansla döner
+  // ve animasyonlar sıfırlanmaz.
+  const characterElements = useMemo(() => {
+    return characterData.map((data) => {
+      if (data.modelPath === '/casper.glb') {
+        return <Casper key={data.index} position={[data.x, data.y, data.z]} name={data.name} controlsRef={controlsRef} nameColor={data.nameColor} scale={data.scale} glow={data.glow} nameY={data.nameY} textSize={data.textSize} modelOffset={data.mOffset} />
+      } else {
+        return <Astronaut key={data.index} position={[data.x, data.y, data.z]} name={data.name} controlsRef={controlsRef} nameColor={data.nameColor} scale={data.scale} glow={data.glow} modelPath={data.modelPath} nameY={data.nameY} textSize={data.textSize} modelOffset={data.mOffset} />
+      }
+    });
+  }, [characterData, controlsRef]);
+
+  useEffect(() => {
+    if (searchQuery && controlsRef.current && characterData) {
+      const target = characterData.find(c => c.name.toLowerCase() === searchQuery.toLowerCase() || c.name.toLowerCase().includes(searchQuery.toLowerCase()));
+      if (target) {
+        const { x, y, z, mOffset, nameY, scale } = target;
+        const finalNameY = nameY !== undefined ? nameY : 2.5 * scale;
+        controlsRef.current.setLookAt(
+          x + mOffset[0], y + (finalNameY * 1), z + mOffset[2] + 4.5,
+          x + mOffset[0], y + (finalNameY / 1.1), z + mOffset[2],
+          true
+        );
+      }
+    }
+  }, [searchQuery, characterData, controlsRef]);
+
   // this is comment section,  i gotta make new videos about keyboard and monitor while im adding new followers to universe, idk if this is gonna be a good project but actually after this day i dont believe much, i only have 24 followes 10 of them are friend and 3-4 of them are from some bot comments, i have only 10 real followers. i hope i will grove fast otherwise im gonna give up cuz im tired.
   return (
     <group>
@@ -533,164 +628,7 @@ function GenesisHierarchy({ controlsRef, list }) {
       <mesh position={[-8, baseY + 2.5, 0]}><cylinderGeometry args={[2, 3, 3, 32]} /><meshStandardMaterial color="#cccccc" metalness={1} roughness={0.2} emissive="#666666" emissiveIntensity={0.3} /></mesh>
       <mesh position={[8, baseY + 2.0, 0]}><cylinderGeometry args={[2, 3, 2, 32]} /><meshStandardMaterial color="#cd7f32" metalness={1} roughness={0.3} emissive="#663300" emissiveIntensity={0.3} /></mesh>
 
-      {list.map((name, index) => {
-        // İŞTE BURASI ÇOK ÖNEMLİ: mOffset'i en başta tanımlıyoruz!
-        let x, y, z, scale = 1, nameColor = '#ffffff', glow = null, modelPath = '/casper.glb', nameY = 3.0, textSize = undefined;
-        let mOffset = [0, 0, 0]; // Başlangıçta kimse kaymasın diyoruz.
-
-        if (index === 0) {
-          // 1. KARAKTER (Kral)
-          x = 0; z = 0; y = baseY + 6; scale = 4.2; nameColor = '#ff007b'; glow = '#ffaa00'; modelPath = '/king.glb'; nameY = 9.4; textSize = 2.2;
-        } else if (index === 1) {
-          // 2. KARAKTER (VIP Podyum)
-          x = -8; z = 0; y = baseY + 4; scale = 0.025; nameColor = '#ffffff'; nameY = 6.0; modelPath = '/swwmya.glb'; textSize = 1.5;
-        } else if (index === 2) {
-          // 3. KARAKTER (VIP Podyum)
-          x = 8; z = 0; y = baseY + 3; scale = 0.20; nameColor = '#b46530'; nameY = 6.0; modelPath = '/elifertenx.glb'; textSize = 1.5;
-          mOffset = [0, 0, 0];
-        } else {
-          // --- GERİ KALAN HERKES (RASTGELE DAĞILIM) ---
-
-          if (index >= 3 && index < 23) {
-            nameColor = '#ffcc00';
-            modelPath = `/vip_${index + 1}.glb`;
-
-            // İŞTE SİHİR BURADA: Her VIP'ye özel boyut (scale) ve isim yüksekliği (nameY) atıyoruz!
-            if (index === 3) {
-              scale = 85.5;  // 4. Takipçi (vip_4.glb) boyutu
-              nameY = 8.0;  // İsminin havada duracağı yükseklik
-              textSize = 1;
-              mOffset = [11, 4.0, 0];
-            }
-            else if (index === 4) {
-              scale = 2.4; // 5. Takipçi (vip_5.glb) - (Eğer model çok büyükse böyle küçült)
-              nameY = 7.8;
-              textSize = 1;
-            }
-            else if (index === 5) {
-              scale = 5.2;  // 6. Takipçi (vip_6.glb)
-              nameY = 4.7;
-              textSize = 1;
-            }
-            else if (index === 6) {
-              scale = 2.3;  // 7. Takipçi
-              nameY = 7.5;
-              textSize = 1;
-            }
-            else if (index === 7) {
-              scale = 2.5;  // 8. Takipçi
-              nameY = 7.0;
-              textSize = 1;
-            }
-            else if (index === 8) {
-              scale = 2.3;  // 9. Takipçi
-              nameY = 6.5;
-              textSize = 1;
-            }
-            else if (index === 9) {
-              scale = 0.42;  // 10. Takipçi
-              nameY = 7.6;
-              textSize = 1;
-              mOffset = [0, 0.5, 0];
-            }
-            else if (index === 10) {
-              scale = 2.2;  // 11. Takipçi
-              nameY = 8.3;
-              textSize = 1;
-              mOffset = [0, 0, -4];
-            }
-            else if (index === 11) {
-              scale = 3.7;  // 11. Takipçi
-              nameY = 8.8;
-              textSize = 1;
-              glow = '#1b0707';
-              mOffset = [0, 0, 0];
-            }
-            else if (index === 12) {
-              scale = 2.2;  // 11. Takipçi
-              nameY = 6.1;
-              textSize = 1;
-            }
-            else if (index === 13) {
-              scale = 3.2;  // 11. Takipçi
-              nameY = 6.8;
-              textSize = 1;
-            }
-            else if (index === 14) {
-              scale = 4.1;  // 11. Takipçi
-              nameY = 7.8;
-              textSize = 1;
-            }
-            else if (index === 15) {
-              scale = 2.2;  // 11. Takipçi
-              nameY = 7.3;
-              textSize = 1;
-            }
-            else if (index === 16) {
-              scale = 5.7;  // 11. Takipçi
-              nameY = 7.2;
-              textSize = 1;
-            }
-            else if (index === 17) {
-              scale = 4.2;  // 11. Takipçi
-              nameY = 8.4;
-              textSize = 1;
-            }
-            else if (index === 18) {
-              scale = 0.7;  // 11. Takipçi
-              nameY = 7.2;
-              textSize = 1;
-            }
-            else if (index === 19) {
-              scale = 2.7;  // 11. Takipçi
-              nameY = 7.2;
-              textSize = 1;
-            }
-            else if (index === 20) {
-              scale = 2.7;  // 11. Takipçi
-              nameY = 8.4;
-              textSize = 1;
-            }
-            else if (index === 21) {
-              scale = 2.7;  // 11. Takipçi
-              nameY = 8.4;
-              textSize = 1;
-            }
-            else if (index === 22) {
-              scale = 2.7;  // 11. Takipçi
-              nameY = 8.4;
-              textSize = 1;
-            }
-          } else {
-            // 12. KİŞİ VE SONRASI STANDART VATANDAŞ
-            nameColor = '#ffcc00';
-            scale = 0.9; // Standart vatandaşın boyutu
-            nameY = 27.8;
-            textSize = 1;
-            mOffset = [0, 20.5, 0];
-            modelPath = '/casper.glb';
-          }
-
-          // Rastgele dağılım kodun (Burası senin efsane algoritman, hiç ellemedim)
-          do {
-            x = (Math.random() - 0.5) * 500;
-            z = (Math.random() - 0.5) * 500;
-
-            if (Math.abs(x) < 20 && Math.abs(z) < 35) {
-              x += (x > 0 ? 40 : -40);
-              z += (z > 0 ? 40 : -40);
-            }
-
-            y = getElevation(x, z);
-          } while (y < waterLevel + 0.5);
-        }
-
-        if (modelPath === '/casper.glb') {
-          return <Casper key={index} position={[x, y, z]} name={name} controlsRef={controlsRef} nameColor={nameColor} scale={scale} glow={glow} nameY={nameY} textSize={textSize} modelOffset={mOffset} />
-        } else {
-          return <Astronaut key={index} position={[x, y, z]} name={name} controlsRef={controlsRef} nameColor={nameColor} scale={scale} glow={glow} modelPath={modelPath} nameY={nameY} textSize={textSize} modelOffset={mOffset} />
-        }
-      })}
+      {characterElements}
     </group>
   )
 }
@@ -732,6 +670,7 @@ try {
   useGLTF.preload('/vip_21.glb');
   useGLTF.preload('/vip_22.glb');
   useGLTF.preload('/vip_23.glb');
+  useGLTF.preload('/vip_24.glb');
   useGLTF.preload('/casper.glb');
   useGLTF.preload('/space_station');
   useGLTF.preload('/memory_core.glb');
@@ -850,7 +789,7 @@ function HologramDatabase({ list, position, setFocusedTarget, isFocused }) {
   useFrame((state, delta) => {
     if (listTexture) {
       // Sürekli kendi kendine akan animasyon. Negatif arttıkça yukarı akar.
-      offsetRef.current -= delta * 0.04;
+      offsetRef.current -= delta * 0.015;
       listTexture.offset.y = offsetRef.current;
     }
   })
@@ -1152,6 +1091,8 @@ function App() {
   const [view, setView] = useState('galaxy')
   const [focusedTarget, setFocusedTarget] = useState('sun')
   const [transitionVideo, setTransitionVideo] = useState('/transition.mp4')
+  const [searchQuery, setSearchQuery] = useState('')
+  const [searchInput, setSearchInput] = useState('')
   const cameraControlsRef = useRef()
   const videoRef = useRef(null)
 
@@ -1182,7 +1123,7 @@ function App() {
       cameraControlsRef.current.setLookAt(x + 25, y + 20, z + 25, x, y, z, true);
     }
     else if (focusedTarget === 'memory_core') {
-      cameraControlsRef.current.setLookAt(100, 40, 50, 80, 20, 20, true);
+      cameraControlsRef.current.setLookAt(120, 60, 80, 80, 20, 20, true);
     }
     else if (focusedTarget === 'space_station') {
       cameraControlsRef.current.setLookAt(85, 40, 60, 75, 10, 20, true);
@@ -1191,7 +1132,7 @@ function App() {
       cameraControlsRef.current.setLookAt(-180, 50, -130, -250, 10, -200, true);
     }
     else if (focusedTarget === 'database_hologram') {
-      cameraControlsRef.current.setLookAt(180, 20, 50, 180, 20, -50, true);
+      cameraControlsRef.current.setLookAt(180, 20, 30, 180, 20, -50, true);
     }
     else if (focusedTarget === 'genesis') {
       cameraControlsRef.current.setLookAt(110, 40, 110, 82, 5, 82, true);
@@ -1260,6 +1201,42 @@ function App() {
         </div>
       )}
 
+      {view === 'surface_genesis' && (
+        <div style={{
+          position: 'absolute', top: '25px', right: '25px', zIndex: 110,
+          background: 'rgba(0, 20, 5, 0.85)', padding: '15px', borderRadius: '8px',
+          border: '1px solid #ffd700', boxShadow: '0 0 15px rgba(255, 215, 0, 0.3)',
+          display: 'flex', flexDirection: 'column', gap: '10px',
+          fontFamily: '"Courier New", Courier, monospace', backdropFilter: 'blur(4px)'
+        }}>
+          <div style={{ color: '#ffd700', fontSize: '14px', fontWeight: 'bold', letterSpacing: '1px' }}>/// FIND FOLLOWER</div>
+          <div style={{ display: 'flex', gap: '5px' }}>
+            <input
+              type="text"
+              placeholder="Enter name..."
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
+              onKeyDown={(e) => { if (e.key === 'Enter') setSearchQuery(searchInput) }}
+              style={{
+                background: 'rgba(0,0,0,0.5)', border: '1px solid #ffd700',
+                color: '#fff', padding: '5px 10px', borderRadius: '4px', outline: 'none',
+                fontFamily: '"Courier New", Courier, monospace', width: '150px'
+              }}
+            />
+            <button
+              onClick={() => setSearchQuery(searchInput)}
+              style={{
+                background: 'rgba(255, 215, 0, 0.2)', color: '#ffd700', border: '1px solid #ffd700',
+                padding: '5px 10px', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold',
+                fontFamily: '"Courier New", Courier, monospace', transition: '0.3s'
+              }}
+              onPointerOver={(e) => e.target.style.background = 'rgba(255, 215, 0, 0.4)'}
+              onPointerOut={(e) => e.target.style.background = 'rgba(255, 215, 0, 0.2)'}
+            >[ SEARCH ]</button>
+          </div>
+        </div>
+      )}
+
       {view === 'galaxy' && (
         <>
           <div onClick={() => setIsMenuOpen(!isMenuOpen)} style={{ position: 'absolute', top: '25px', left: '25px', zIndex: 100, cursor: 'pointer', background: 'rgba(0, 5, 10, 0.9)', padding: '12px', borderRadius: '5px', border: '1px solid #555', display: 'flex', flexDirection: 'column', gap: '5px' }}>
@@ -1320,7 +1297,7 @@ function App() {
               <directionalLight position={[-50, 80, -20]} intensity={1.5} color="#ffffee" />
               <ParadiseTerrain /> <ParadiseWater /> <Fireflies />
               <Cloud position={[0, 100, 0]} opacity={0.5} speed={0.4} width={200} depth={200} segments={40} color="#ffffff" />
-              <GenesisHierarchy controlsRef={cameraControlsRef} list={genesisFollowers} />
+              <GenesisHierarchy controlsRef={cameraControlsRef} list={genesisFollowers} searchQuery={searchQuery} />
               <GlowingTrees /> <FloatingIsland />
             </>
           )}
