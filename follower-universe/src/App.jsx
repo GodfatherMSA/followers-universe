@@ -25,14 +25,14 @@ function SunSystem({ focusedTarget, setFocusedTarget, controlsRef }) {
 
       {/* === GÜNEŞİN TEPESİNDEKİ YARATICI - YENİ GOD.GLB MODELİ === */}
       <Astronaut
-        position={[0, 12.5, 0]} // Eğer model yamuk/aşağıda durursa bu sayılarla oyna (Örn: y eksenini 12.5 yap)
+        position={[0, 32.5, 0]} // Eğer model yamuk/aşağıda durursa bu sayılarla oyna (Örn: y eksenini 12.5 yap)
         name="THE CREATOR"
-        scale={2.5} // God modeli çok küçük veya büyük gelirse burayı değiştir
+        scale={5.5} // God modeli çok küçük veya büyük gelirse burayı değiştir
         nameColor="#731810fe"
         glow="#ffffff"
         controlsRef={controlsRef}
-        nameY={1.9} // Yazı kafasının içine girerse bunu büyüt
-        textSize={0.5}
+        nameY={3.5} // Yazı kafasının içine girerse bunu büyüt
+        textSize={1.5}
         modelPath='/tanri.glb' // İŞTE YENİ TANRI MODELİMİZ!
       />
     </group>
@@ -771,10 +771,13 @@ function HologramDatabase({ list, position, setFocusedTarget, isFocused }) {
     const listCanvas = document.createElement('canvas')
     const lCtx = listCanvas.getContext('2d')
 
-    const columnCount = 2
+    // GPU max texture boyutu genellikle 16384px. Bunu aşmamak için
+    // sütun sayısını artırıp satır yüksekliğini düşürüyoruz.
+    const columnCount = 4
+    const rowSpacing = 55
+    const fontSize = 32
     const rowCount = Math.ceil(list.length / columnCount)
-    // Satır başına 100px; panel en az 3072 kadar uzun olmalı, listeye göre büyüyecek
-    const listHeight = Math.max(3072, rowCount * 120 + 300)
+    const listHeight = Math.min(16384, Math.max(3072, rowCount * rowSpacing + 300))
 
     listCanvas.width = 2048
     listCanvas.height = listHeight
@@ -783,17 +786,21 @@ function HologramDatabase({ list, position, setFocusedTarget, isFocused }) {
     lCtx.clearRect(0, 0, listCanvas.width, listCanvas.height)
 
     // İsim Fontları
-    lCtx.font = 'Bold 65px "Courier New", Courier, monospace'
+    lCtx.font = `Bold ${fontSize}px "Courier New", Courier, monospace`
     lCtx.fillStyle = '#0a7a2e'
     lCtx.shadowColor = '#00ff44'
     lCtx.shadowBlur = 2
 
+    const colWidth = listCanvas.width / columnCount
     list.forEach((name, i) => {
       const col = i % columnCount
       const row = Math.floor(i / columnCount)
-      const x = 120 + col * (listCanvas.width / columnCount)
-      const y = 200 + row * 120
-      lCtx.fillText(`> ${name}`, x, y)
+      const x = 30 + col * colWidth
+      const y = 100 + row * rowSpacing
+      // İsmi sütun genişliğine sığdırmak için kırp
+      const maxChars = 12
+      const displayName = name.length > maxChars ? name.substring(0, maxChars) + '..' : name
+      lCtx.fillText(`> ${displayName}`, x, y)
     })
 
     const lTex = new THREE.CanvasTexture(listCanvas)
@@ -1235,7 +1242,7 @@ function App() {
           display: 'flex', flexDirection: 'column', gap: '10px',
           fontFamily: '"Courier New", Courier, monospace', backdropFilter: 'blur(4px)'
         }}>
-          <div style={{ color: view === 'surface_lava' ? '#ff3300' : view === 'surface_ice' ? '#00ffff' : '#ffd700', fontSize: '14px', fontWeight: 'bold', letterSpacing: '1px' }}>/// FIND FOLLOWER</div>
+          <div style={{ color: view === 'surface_lava' ? '#ff3300' : view === 'surface_ice' ? '#00ffff' : '#ffd700', fontSize: '14px', fontWeight: 'bold', letterSpacing: '1px' }}> -FIND FOLLOWER-</div>
           <div style={{ display: 'flex', gap: '5px' }}>
             <input
               type="text"
