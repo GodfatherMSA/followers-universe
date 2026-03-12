@@ -7,6 +7,8 @@ import genesisFollowers from './data/genesisFollowers.json'
 import iceFollowers from './data/iceFollowers.json'
 import lavaFollowers from './data/lavaFollowers.json'
 
+const allFollowers = [...genesisFollowers, ...iceFollowers, ...lavaFollowers];
+
 const waterLevel = -6.6;
 
 // OUTER SPACE AND THE SOLAR SYSTEM
@@ -319,7 +321,7 @@ function AshStorm() {
 // ==========================================
 // Not: Artık "import { useControls } from 'leva'" yazısına ihtiyacımız kalmadı, onu kodun en üstünden silebilirsin.
 
-function Astronaut({ position, name, controlsRef, nameColor = '#ffffff', scale = 1, glow = null, modelPath = '/little_astronaut.glb', nameY, textSize, modelOffset = [0, 0, 0] }) {
+function Astronaut({ position, name, controlsRef, nameColor = '#ffffff', scale = 1, glow = null, modelPath = '/little_astronaut.glb', nameY, textSize, modelOffset = [0, 0, 0], nameZOffset = 0 }) {
 
   const group = useRef()
   const { scene, animations } = useGLTF(modelPath)
@@ -354,7 +356,7 @@ function Astronaut({ position, name, controlsRef, nameColor = '#ffffff', scale =
         </group>
       </group>
 
-      <Billboard position={[0, finalNameY, 0]}>
+      <Billboard position={[0, finalNameY, nameZOffset]}>
         <Text fontSize={finalTextSize} color={nameColor} anchorX="center" anchorY="middle" outlineWidth={0.03} outlineColor="#000000">{name}</Text>
       </Billboard>
       {glow && <pointLight distance={30} intensity={15} color={glow} position={[0, 4, 3]} />}
@@ -428,7 +430,7 @@ function MemoryCoreHologram({ list, setFocusedTarget }) {
   });
 
   return (
-    <group position={[80, 20, 20]} scale={2}>
+    <group position={[80, 20, 20]} scale={3}>
       <Billboard position={[0, 5, 0]} follow={true}>
         <group>
           {/* Arkadaki yeşil neon yansıma */}
@@ -633,11 +635,30 @@ function GenesisHierarchy({ controlsRef, list, searchQuery }) {
   )
 }
 
-function FollowerAvatars({ controlsRef, list, defaultColor }) {
-  const avatarPositions = useMemo(() => list.map((name) => { const x = (Math.random() - 0.5) * 200; const z = (Math.random() - 0.5) * 200; return { name, x, y: getElevation(x, z), z }; }), [list]);
+function FollowerAvatars({ controlsRef, list, defaultColor, modelPath, scale = 1, nameY = 2.5, modelOffset = [0, 0, 0], firstModelPath, firstScale, firstGlow, firstModelOffset, firstNameZOffset, searchQuery }) {
+  const avatarPositions = useMemo(() => list.map((name, index) => {
+    if (index === 0 && firstModelPath) {
+      return { name, x: 0, y: getElevation(0, 0), z: 0 };
+    }
+    const x = (Math.random() - 0.5) * 200; const z = (Math.random() - 0.5) * 200; return { name, x, y: getElevation(x, z), z };
+  }), [list, firstModelPath]);
 
-  // DİĞER GEZEGENLER DE CASPER ANIMASYONLARINI KULLANACAK ŞEKİLDE GÜNCELLENDİ
-  return <group>{avatarPositions.map((avatar, index) => <Casper key={index} position={[avatar.x, avatar.y, avatar.z]} name={avatar.name} controlsRef={controlsRef} nameColor={defaultColor} scale={0.9} nameY={27.8} textSize={1} modelOffset={[0, 20.5, 0]} />)}</group>
+  useEffect(() => {
+    if (searchQuery && controlsRef.current && avatarPositions) {
+      const target = avatarPositions.find(c => c.name.toLowerCase() === searchQuery.toLowerCase() || c.name.toLowerCase().includes(searchQuery.toLowerCase()));
+      if (target) {
+        const tScale = (target === avatarPositions[0] && firstScale) ? firstScale : scale;
+        const tNameY = (target === avatarPositions[0] && firstModelPath) ? nameY + 4 : nameY;
+        controlsRef.current.setLookAt(
+          target.x, target.y + tNameY, target.z + 4.5,
+          target.x, target.y + (tNameY / 1.1), target.z,
+          true
+        );
+      }
+    }
+  }, [searchQuery, avatarPositions, controlsRef, scale, firstScale, nameY, firstModelPath]);
+
+  return <group>{avatarPositions.map((avatar, index) => <Astronaut key={index} position={[avatar.x, avatar.y, avatar.z]} name={avatar.name} controlsRef={controlsRef} nameColor={defaultColor} scale={index === 0 && firstScale ? firstScale : scale} nameY={index === 0 && firstModelPath ? nameY + 4 : nameY} textSize={1} modelPath={index === 0 && firstModelPath ? firstModelPath : modelPath} modelOffset={index === 0 && firstModelOffset ? firstModelOffset : modelOffset} glow={index === 0 && firstGlow ? firstGlow : null} nameZOffset={index === 0 && firstNameZOffset ? firstNameZOffset : 0} />)}</group>
 }
 
 try {
@@ -672,6 +693,9 @@ try {
   useGLTF.preload('/vip_23.glb');
   useGLTF.preload('/vip_24.glb');
   useGLTF.preload('/casper.glb');
+  useGLTF.preload('/ice.glb');
+  useGLTF.preload('/fire.glb');
+  useGLTF.preload('/spaghetti.glb');
   useGLTF.preload('/space_station');
   useGLTF.preload('/memory_core.glb');
   useGLTF.preload('/animation_object.glb');
@@ -1201,15 +1225,17 @@ function App() {
         </div>
       )}
 
-      {view === 'surface_genesis' && (
+      {view.startsWith('surface') && (
         <div style={{
           position: 'absolute', top: '25px', right: '25px', zIndex: 110,
-          background: 'rgba(0, 20, 5, 0.85)', padding: '15px', borderRadius: '8px',
-          border: '1px solid #ffd700', boxShadow: '0 0 15px rgba(255, 215, 0, 0.3)',
+          background: view === 'surface_lava' ? 'rgba(20, 5, 0, 0.85)' : view === 'surface_ice' ? 'rgba(0, 10, 20, 0.85)' : 'rgba(0, 20, 5, 0.85)',
+          padding: '15px', borderRadius: '8px',
+          border: `1px solid ${view === 'surface_lava' ? '#ff3300' : view === 'surface_ice' ? '#00ffff' : '#ffd700'}`,
+          boxShadow: `0 0 15px ${view === 'surface_lava' ? 'rgba(255, 51, 0, 0.3)' : view === 'surface_ice' ? 'rgba(0, 255, 255, 0.3)' : 'rgba(255, 215, 0, 0.3)'}`,
           display: 'flex', flexDirection: 'column', gap: '10px',
           fontFamily: '"Courier New", Courier, monospace', backdropFilter: 'blur(4px)'
         }}>
-          <div style={{ color: '#ffd700', fontSize: '14px', fontWeight: 'bold', letterSpacing: '1px' }}>/// FIND FOLLOWER</div>
+          <div style={{ color: view === 'surface_lava' ? '#ff3300' : view === 'surface_ice' ? '#00ffff' : '#ffd700', fontSize: '14px', fontWeight: 'bold', letterSpacing: '1px' }}>/// FIND FOLLOWER</div>
           <div style={{ display: 'flex', gap: '5px' }}>
             <input
               type="text"
@@ -1218,7 +1244,8 @@ function App() {
               onChange={(e) => setSearchInput(e.target.value)}
               onKeyDown={(e) => { if (e.key === 'Enter') setSearchQuery(searchInput) }}
               style={{
-                background: 'rgba(0,0,0,0.5)', border: '1px solid #ffd700',
+                background: 'rgba(0,0,0,0.5)',
+                border: `1px solid ${view === 'surface_lava' ? '#ff3300' : view === 'surface_ice' ? '#00ffff' : '#ffd700'}`,
                 color: '#fff', padding: '5px 10px', borderRadius: '4px', outline: 'none',
                 fontFamily: '"Courier New", Courier, monospace', width: '150px'
               }}
@@ -1226,12 +1253,14 @@ function App() {
             <button
               onClick={() => setSearchQuery(searchInput)}
               style={{
-                background: 'rgba(255, 215, 0, 0.2)', color: '#ffd700', border: '1px solid #ffd700',
+                background: `${view === 'surface_lava' ? 'rgba(255, 51, 0, 0.2)' : view === 'surface_ice' ? 'rgba(0, 255, 255, 0.2)' : 'rgba(255, 215, 0, 0.2)'}`,
+                color: view === 'surface_lava' ? '#ff3300' : view === 'surface_ice' ? '#00ffff' : '#ffd700',
+                border: `1px solid ${view === 'surface_lava' ? '#ff3300' : view === 'surface_ice' ? '#00ffff' : '#ffd700'}`,
                 padding: '5px 10px', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold',
                 fontFamily: '"Courier New", Courier, monospace', transition: '0.3s'
               }}
-              onPointerOver={(e) => e.target.style.background = 'rgba(255, 215, 0, 0.4)'}
-              onPointerOut={(e) => e.target.style.background = 'rgba(255, 215, 0, 0.2)'}
+              onPointerOver={(e) => e.target.style.background = `${view === 'surface_lava' ? 'rgba(255, 51, 0, 0.4)' : view === 'surface_ice' ? 'rgba(0, 255, 255, 0.4)' : 'rgba(255, 215, 0, 0.4)'}`}
+              onPointerOut={(e) => e.target.style.background = `${view === 'surface_lava' ? 'rgba(255, 51, 0, 0.2)' : view === 'surface_ice' ? 'rgba(0, 255, 255, 0.2)' : 'rgba(255, 215, 0, 0.2)'}`}
             >[ SEARCH ]</button>
           </div>
         </div>
@@ -1278,13 +1307,13 @@ function App() {
               <ambientLight intensity={1.4} color="#ffffff" />
               <SunSystem focusedTarget={focusedTarget} setFocusedTarget={setFocusedTarget} controlsRef={cameraControlsRef} />
               <SolarSystemOrbits onEnter={handleEnterPlanet} focusedTarget={focusedTarget} setFocusedTarget={setFocusedTarget} controlsRef={cameraControlsRef} />
-              <MemoryCoreHologram list={genesisFollowers} setFocusedTarget={setFocusedTarget} cameraControlsRef={cameraControlsRef} />
+              <MemoryCoreHologram list={allFollowers} setFocusedTarget={setFocusedTarget} cameraControlsRef={cameraControlsRef} />
               <SpaceStationModel position={[90, 20, 35]} scale={0.2} setFocusedTarget={setFocusedTarget} />
               <RepairedMoon focusedTarget={focusedTarget} setFocusedTarget={setFocusedTarget} moonPositionRef={moonPositionRef} />
 
               {/* === DEV HOLOGRAM DATABASE === */}
               {/* Gezegenlerin biraz daha sağında ve arkasında durması için x: 180, z: -50 verdik */}
-              <HologramDatabase list={genesisFollowers} position={[180, 20, -50]} setFocusedTarget={setFocusedTarget} isFocused={focusedTarget === 'database_hologram'} />
+              <HologramDatabase list={allFollowers} position={[180, 20, -50]} setFocusedTarget={setFocusedTarget} isFocused={focusedTarget === 'database_hologram'} />
 
               <AnimatedStructure position={[-250, 10, -200]} scale={0.07} setFocusedTarget={setFocusedTarget} />
               <Stars radius={250} depth={100} count={7000} factor={6} fade speed={1} />
@@ -1306,13 +1335,16 @@ function App() {
             <>
               <ambientLight intensity={0.5} color="#ffffff" />
               <IceTerrain /> <SnowStorm />
+              <FollowerAvatars controlsRef={cameraControlsRef} list={iceFollowers} defaultColor="#00ffff" modelPath="/ice.glb" scale={3.5} nameY={6.5} searchQuery={searchQuery} />
             </>
           )}
 
           {view === 'surface_lava' && (
             <>
               <ambientLight intensity={0.4} color="#ff3300" />
+              <directionalLight position={[50, 80, 30]} intensity={2.5} color="#ffffff" />
               <LavaTerrain /> <AshStorm />
+              <FollowerAvatars controlsRef={cameraControlsRef} list={lavaFollowers} defaultColor="#ffcc00" modelPath="/fire.glb" scale={3.5} nameY={6.5} firstModelPath="/spaghetti.glb" firstScale={7.5} firstModelOffset={[0, 4.3, 0]} firstGlow="#ffffff" firstNameZOffset={-8} searchQuery={searchQuery} />
             </>
           )}
         </Suspense>
