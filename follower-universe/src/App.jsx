@@ -6,8 +6,9 @@ import { Text, Billboard, useTexture, Stars, Html, useGLTF, Clone, useAnimations
 import genesisFollowers from './data/genesisFollowers.json'
 import iceFollowers from './data/iceFollowers.json'
 import lavaFollowers from './data/lavaFollowers.json'
+import blackholeFollowers from './data/blackhole.json'
 
-const allFollowers = [...genesisFollowers, ...iceFollowers, ...lavaFollowers];
+const allFollowers = [...genesisFollowers, ...iceFollowers, ...lavaFollowers, ...blackholeFollowers];
 
 const waterLevel = -6.6;
 
@@ -356,7 +357,7 @@ function Astronaut({ position, name, controlsRef, nameColor = '#ffffff', scale =
         </group>
       </group>
 
-      <Billboard position={[0, finalNameY, nameZOffset]}>
+      <Billboard position={[modelOffset[0], finalNameY, nameZOffset + modelOffset[2]]}>
         <Text fontSize={finalTextSize} color={nameColor} anchorX="center" anchorY="middle" outlineWidth={0.03} outlineColor="#000000">{name}</Text>
       </Billboard>
       {glow && <pointLight distance={30} intensity={15} color={glow} position={[0, 4, 3]} />}
@@ -381,8 +382,9 @@ function MemoryCoreHologram({ list, setFocusedTarget }) {
   const canvasTexture = useMemo(() => {
     const canvas = document.createElement('canvas')
 
-    // Yüksekliği yine senin listene göre ayarlıyoruz
-    const calculatedHeight = Math.max(2048, (list.length * 60) + 200);
+    // Yüksekliği yine senin listene göre ayarlıyoruz — GPU max texture boyutu 16384
+    const rowSpacing = Math.min(60, Math.floor((16384 - 200) / Math.max(list.length, 1)));
+    const calculatedHeight = Math.min(16384, Math.max(2048, (list.length * rowSpacing) + 200));
 
     // [ADIM 1]: Genişliği 1024'ten 512'ye düşürerek tuvali daraltıyoruz
     canvas.width = 512
@@ -404,7 +406,7 @@ function MemoryCoreHologram({ list, setFocusedTarget }) {
       const fakeCode = `${randNum1}-${randNum2}-${randNum3}`;
 
       // Yeni genişliğin yarısı (256) merkez noktamız oldu
-      ctx.fillText(fakeCode, 256, 100 + i * 60)
+      ctx.fillText(fakeCode, 256, 100 + i * rowSpacing)
     })
 
     const tex = new THREE.CanvasTexture(canvas)
@@ -635,12 +637,12 @@ function GenesisHierarchy({ controlsRef, list, searchQuery }) {
   )
 }
 
-function FollowerAvatars({ controlsRef, list, defaultColor, modelPath, scale = 1, nameY = 2.5, modelOffset = [0, 0, 0], firstModelPath, firstScale, firstGlow, firstModelOffset, firstNameZOffset, searchQuery }) {
+function FollowerAvatars({ controlsRef, list, defaultColor, modelPath, scale = 1, nameY = 2.5, modelOffset = [0, 0, 0], firstModelPath, firstScale, firstGlow, firstModelOffset, firstNameZOffset, searchQuery, spreadRadius = 200 }) {
   const avatarPositions = useMemo(() => list.map((name, index) => {
     if (index === 0 && firstModelPath) {
       return { name, x: 0, y: getElevation(0, 0), z: 0 };
     }
-    const x = (Math.random() - 0.5) * 200; const z = (Math.random() - 0.5) * 200; return { name, x, y: getElevation(x, z), z };
+    const x = (Math.random() - 0.5) * spreadRadius; const z = (Math.random() - 0.5) * spreadRadius; return { name, x, y: getElevation(x, z), z };
   }), [list, firstModelPath]);
 
   useEffect(() => {
@@ -701,6 +703,9 @@ try {
   useGLTF.preload('/animation_object.glb');
   useGLTF.preload('/repaired_moon.glb');
   useGLTF.preload('/bigbang.glb');
+  useGLTF.preload('/trashfollowers.glb');
+  useGLTF.preload('/trash_can.glb');
+  useGLTF.preload('/yuh.glb');
 } catch (e) { }
 // ==========================================
 // 3. BÖLÜM: KAMERA VE ANA UYGULAMA
@@ -925,6 +930,9 @@ function SceneController({ view, controlsRef }) {
     } else if (view === 'surface_lava') {
       scene.fog = new THREE.Fog('#2a0505', 20, 150); scene.background = new THREE.Color('#1a0000');
       controlsRef.current.setPosition(0, 300, 100, false); controlsRef.current.setLookAt(0, 5, 30, 0, 5, 0, true);
+    } else if (view === 'surface_blackhole') {
+      scene.fog = null; scene.background = new THREE.Color('#000000');
+      controlsRef.current.setPosition(0, 300, 100, false); controlsRef.current.setLookAt(0, 5, 30, 0, 5, 0, true);
     }
   }, [view, scene, controlsRef])
   return null
@@ -952,10 +960,102 @@ function SpaceStationModel({ position, scale, setFocusedTarget }) {
     </group>
   )
 }
+// ==========================================
+// KARA DELİK İÇ MEKANI — SİYAH BOŞLUK + RASTGELE IŞIKLAR
+// ==========================================
+function BlackHoleInterior() {
+  const count = 800;
+  const pointsRef = useRef();
+
+  const positions = useMemo(() => {
+    const pos = new Float32Array(count * 3);
+    for (let i = 0; i < count; i++) {
+      pos[i * 3] = (Math.random() - 0.5) * 500;
+      pos[i * 3 + 1] = (Math.random() - 0.5) * 300;
+      pos[i * 3 + 2] = (Math.random() - 0.5) * 500;
+    }
+    return pos;
+  }, []);
+
+  const colors = useMemo(() => {
+    const col = new Float32Array(count * 3);
+    const palette = [
+      [1, 1, 1],          // beyaz
+      [0.6, 0, 1],        // mor
+      [1, 0, 0.3],        // kırmızı
+      [0, 0.8, 1],        // cyan
+      [0.3, 0, 0.6],      // koyu mor
+      [1, 0.3, 0],        // turuncu
+    ];
+    for (let i = 0; i < count; i++) {
+      const c = palette[Math.floor(Math.random() * palette.length)];
+      col[i * 3] = c[0];
+      col[i * 3 + 1] = c[1];
+      col[i * 3 + 2] = c[2];
+    }
+    return col;
+  }, []);
+
+  const glowTexture = useMemo(() => {
+    const canvas = document.createElement('canvas');
+    canvas.width = 32; canvas.height = 32;
+    const ctx = canvas.getContext('2d');
+    const grad = ctx.createRadialGradient(16, 16, 0, 16, 16, 16);
+    grad.addColorStop(0, 'rgba(255, 255, 255, 1)');
+    grad.addColorStop(0.3, 'rgba(255, 255, 255, 0.6)');
+    grad.addColorStop(1, 'rgba(255, 255, 255, 0)');
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, 32, 32);
+    return new THREE.CanvasTexture(canvas);
+  }, []);
+
+  useFrame((state, delta) => {
+    if (!pointsRef.current) return;
+    const posArray = pointsRef.current.geometry.attributes.position.array;
+    const t = state.clock.getElapsedTime();
+    for (let i = 0; i < count; i++) {
+      // Hafif titreşim efekti
+      posArray[i * 3] += Math.sin(t * 0.5 + i) * delta * 0.3;
+      posArray[i * 3 + 1] += Math.cos(t * 0.3 + i * 0.7) * delta * 0.2;
+    }
+    pointsRef.current.geometry.attributes.position.needsUpdate = true;
+  });
+
+  return (
+    <group>
+      {/* Rastgele dağılmış ışık noktaları */}
+      <points ref={pointsRef}>
+        <bufferGeometry>
+          <bufferAttribute attach="attributes-position" count={count} array={positions} itemSize={3} />
+          <bufferAttribute attach="attributes-color" count={count} array={colors} itemSize={3} />
+        </bufferGeometry>
+        <pointsMaterial
+          size={3}
+          map={glowTexture}
+          transparent={true}
+          opacity={0.7}
+          sizeAttenuation
+          blending={THREE.AdditiveBlending}
+          depthWrite={false}
+          vertexColors={true}
+        />
+      </points>
+
+      {/* Birkaç büyük dim ışık kaynağı — derinlik hissi */}
+      <pointLight position={[50, 30, -80]} intensity={5} distance={200} color="#6600ff" />
+      <pointLight position={[-80, -20, 60]} intensity={3} distance={150} color="#ff0044" />
+      <pointLight position={[0, 50, 0]} intensity={2} distance={100} color="#00ccff" />
+
+      {/* Zemin yok — karanlık boşlukta yürüyorsun */}
+    </group>
+  );
+}
+
 function AnimatedStructure({ position, scale, setFocusedTarget, focusedTarget, onEnterBlackHole }) {
   const group = useRef()
   const { scene, animations } = useGLTF('/animation_object.glb')
   const { actions, names } = useAnimations(animations, group)
+  const [showPanel, setShowPanel] = useState(false)
 
   useEffect(() => {
     if (names.length > 0) actions[names[0]]?.reset().play()
@@ -968,31 +1068,27 @@ function AnimatedStructure({ position, scale, setFocusedTarget, focusedTarget, o
       scale={scale}
       onClick={(e) => {
         e.stopPropagation();
-        // Eğer zaten bu yapıya odaklıysak girişi başlat, değilsek odaklan
-        if (focusedTarget === 'animated_structure') {
-          onEnterBlackHole();
-        } else {
-          setFocusedTarget('animated_structure');
-        }
+        setFocusedTarget('animated_structure');
+        setShowPanel(true);
       }}
       onPointerOver={() => (document.body.style.cursor = 'pointer')}
       onPointerOut={() => (document.body.style.cursor = 'auto')}
     >
       <primitive object={scene} />
 
-      {/* Sadece odaklandığımızda görünen ve girişi belirten yazı */}
-      {focusedTarget === 'animated_structure' && (
-        <Billboard position={[0, 45, 0]}>
-          <Text
-            fontSize={8}
-            color="#ff0000"
-            font="/Orbitron-Bold.ttf"
-            outlineWidth={0.5}
-            outlineColor="#000000"
-          >
-            /// [ CLICK AGAIN TO ENTER EVENT HORIZON ] ///
-          </Text>
-        </Billboard>
+      {showPanel && (
+        <Html position={[0, 50, 0]} center>
+          <div style={{ background: 'rgba(0, 0, 0, 0.92)', border: '1px solid #ff0000', boxShadow: '0 0 30px rgba(255, 0, 0, 0.6), inset 0 0 15px rgba(255, 0, 0, 0.1)', padding: '20px', borderRadius: '4px', color: '#ff0000', fontFamily: '"Courier New", Courier, monospace', width: '260px', backdropFilter: 'blur(4px)', pointerEvents: 'auto', userSelect: 'none', textTransform: 'uppercase' }}>
+            <div onClick={(e) => { e.stopPropagation(); setShowPanel(false); }} style={{ position: 'absolute', top: '10px', right: '15px', cursor: 'pointer', fontSize: '18px', fontWeight: 'bold', color: '#ff0000' }}>×</div>
+            <h3 style={{ margin: '0 0 15px 0', borderBottom: '2px solid #ff0000', paddingBottom: '10px', letterSpacing: '3px', fontSize: '18px', color: '#ff4444' }}>/// EVENT HORIZON</h3>
+            <div style={{ fontSize: '13px', lineHeight: '1.8', color: '#ff6666' }}>
+              <p style={{ margin: '0' }}>Singularity Gate</p>
+              <p style={{ margin: '0' }}>TYPE: <span style={{ fontWeight: 'bold', color: '#ff0000' }}>Black Hole — Class Ω</span></p>
+              <p style={{ margin: '15px 0 0 0', borderTop: '1px dotted #ff0000', paddingTop: '10px' }}>STATUS: <span style={{ fontWeight: 'bold', fontSize: '16px', color: '#ff0000' }}>ACTIVE</span></p>
+            </div>
+            <button onClick={(e) => { e.stopPropagation(); setShowPanel(false); if (onEnterBlackHole) onEnterBlackHole(); }} style={{ marginTop: '20px', width: '100%', padding: '10px', background: 'rgba(255, 0, 0, 0.1)', border: '1px solid #ff0000', color: '#ff4444', fontSize: '13px', fontWeight: 'bold', cursor: 'pointer', fontFamily: '"Courier New", Courier, monospace', animation: 'pulseGold 1.5s infinite' }}>[ ENTER THE VOID ]</button>
+          </div>
+        </Html>
       )}
     </group>
   )
@@ -1117,6 +1213,39 @@ function BigBangModel({ position = [0, 0, 0], scale = 1 }) {
   )
 }
 
+function TrashCanModel({ position = [0, 0, 0], scale = 5, controlsRef }) {
+  const group = useRef();
+  const { scene, animations } = useGLTF('/yuh.glb');
+  const { actions, names } = useAnimations(animations, group);
+
+  useEffect(() => {
+    if (names.length > 0) actions[names[0]]?.reset().play();
+  }, [actions, names]);
+
+  return (
+    <group
+      position={position}
+      scale={scale}
+      onClick={(e) => {
+        e.stopPropagation();
+        if (controlsRef && controlsRef.current) {
+          controlsRef.current.setLookAt(
+            position[0], position[1] + 10, position[2] + 20,
+            position[0], position[1] + 3, position[2],
+            true
+          );
+        }
+      }}
+      onPointerOver={() => document.body.style.cursor = 'pointer'}
+      onPointerOut={() => document.body.style.cursor = 'auto'}
+    >
+      <group ref={group}>
+        <Clone object={scene} />
+      </group>
+    </group>
+  );
+}
+
 function App() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [view, setView] = useState('galaxy')
@@ -1133,6 +1262,7 @@ function App() {
   const fireRef = useRef(null);
   const stepRef = useRef(null);
   const birdsRef = useRef(null);
+  const booRef = useRef(null);
 
   // KAMERA ODAKLANMA SİSTEMİ
   useEffect(() => {
@@ -1187,15 +1317,26 @@ function App() {
       if (birdsRef.current) birdsRef.current.pause();
       if (fireRef.current) { fireRef.current.volume = 0.5; fireRef.current.play(); }
       if (stepRef.current) stepRef.current.src = "/stone_step.mp3";
+    } else if (view === 'surface_blackhole') {
+      if (windRef.current) windRef.current.pause();
+      if (fireRef.current) fireRef.current.pause();
+      if (birdsRef.current) birdsRef.current.pause();
+      if (stepRef.current) stepRef.current.pause();
+      if (booRef.current) { booRef.current.volume = 0.5; booRef.current.play(); }
     } else {
       if (windRef.current) windRef.current.pause();
       if (fireRef.current) fireRef.current.pause();
       if (birdsRef.current) birdsRef.current.pause();
       if (stepRef.current) stepRef.current.pause();
+      if (booRef.current) booRef.current.pause();
     }
   }, [view])
 
   const handleEnterPlanet = (planetType) => {
+    if (planetType === 'blackhole') {
+      setView('surface_blackhole');
+      return;
+    }
     let vidSrc = '/transition.mp4';
     if (planetType === 'lava') vidSrc = '/lavatransition.mp4';
     if (planetType === 'genesis') vidSrc = '/paradisetransition1.mp4';
@@ -1295,12 +1436,14 @@ function App() {
             <div style={menuItemStyle('space_station', '#888888')} onClick={() => { setFocusedTarget('space_station'); setIsMenuOpen(false); }}>[6] Space Station</div>
             <div style={menuItemStyle('bigbang', '#ff00ff')} onClick={() => { setFocusedTarget('bigbang'); setIsMenuOpen(false); }}>[7] The Big Bang</div>
             <div style={menuItemStyle('repaired_moon', '#ffffff')} onClick={() => { setFocusedTarget('repaired_moon'); setIsMenuOpen(false); }}>[8] Repaired Moon</div>
+            <div style={menuItemStyle('animated_structure', '#ff0000')} onClick={() => { setFocusedTarget('animated_structure'); setIsMenuOpen(false); }}>[9] Black Hole</div>
           </div>
         </>
       )}
 
       <audio ref={windRef} src="/wind.mp3" loop /> <audio ref={fireRef} src="/fire.mp3" loop />
       <audio ref={birdsRef} src="/birds.mp3" loop /> <audio ref={stepRef} src="/grass_step.mp3" loop />
+      <audio ref={booRef} src="/boo.wav" loop />
       <video ref={videoRef} src={transitionVideo} style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', objectFit: 'cover', zIndex: 100, opacity: 0, pointerEvents: 'none', transition: 'opacity 0.5s ease-out' }} />
 
       <Canvas>
@@ -1322,7 +1465,7 @@ function App() {
               {/* Gezegenlerin biraz daha sağında ve arkasında durması için x: 180, z: -50 verdik */}
               <HologramDatabase list={allFollowers} position={[180, 20, -50]} setFocusedTarget={setFocusedTarget} isFocused={focusedTarget === 'database_hologram'} />
 
-              <AnimatedStructure position={[-250, 10, -200]} scale={0.07} setFocusedTarget={setFocusedTarget} />
+              <AnimatedStructure position={[-250, 10, -200]} scale={0.07} setFocusedTarget={setFocusedTarget} focusedTarget={focusedTarget} onEnterBlackHole={() => handleEnterPlanet('blackhole')} />
               <Stars radius={250} depth={100} count={7000} factor={6} fade speed={1} />
             </>
           )}
@@ -1352,6 +1495,19 @@ function App() {
               <directionalLight position={[50, 80, 30]} intensity={2.5} color="#ffffff" />
               <LavaTerrain /> <AshStorm />
               <FollowerAvatars controlsRef={cameraControlsRef} list={lavaFollowers} defaultColor="#ffcc00" modelPath="/fire.glb" scale={3.5} nameY={6.5} firstModelPath="/spaghetti.glb" firstScale={7.5} firstModelOffset={[0, 4.3, 0]} firstGlow="#ffffff" firstNameZOffset={-8} searchQuery={searchQuery} />
+            </>
+          )}
+
+          {view === 'surface_blackhole' && (
+            <>
+              <ambientLight intensity={4} color="#ffffff" />
+              <directionalLight position={[50, 80, 30]} intensity={3} color="#ffffff" />
+              <directionalLight position={[-50, 40, -30]} intensity={2} color="#ffffff" />
+              <hemisphereLight skyColor="#ffffff" groundColor="#444444" intensity={2} />
+              <BlackHoleInterior />
+              <FollowerAvatars controlsRef={cameraControlsRef} list={blackholeFollowers} defaultColor="#ff0000" modelPath="/trashfollowers.glb" scale={3.5} nameY={10.5} searchQuery={searchQuery} spreadRadius={25} modelOffset={[13, 0, -36]} />
+              {/* yuh.glb - Karadeliğin merkezinde */}
+              <TrashCanModel position={[0, 0, 0]} controlsRef={cameraControlsRef} />
             </>
           )}
         </Suspense>
